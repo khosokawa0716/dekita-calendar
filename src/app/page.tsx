@@ -3,16 +3,19 @@
 import { useEffect, useState } from 'react'
 import { db } from '@/lib/firebase'
 import {
+  doc,
+  updateDoc,
   collection,
   getDocs,
   query,
   where,
-  updateDoc,
-  doc,
+  setDoc,
+  getDoc,
 } from 'firebase/firestore'
 
 type Task = {
   id: string
+  userId?: string // ユーザーIDはオプションに変更
   title: string
   isCompleted: boolean
 }
@@ -42,6 +45,7 @@ export default function Home() {
         id: doc.id,
         title: doc.data().title as string,
         isCompleted: doc.data().isCompleted as boolean,
+        userId: doc.data().userId,
       }))
       setTasks(taskList)
     } catch (error) {
@@ -51,10 +55,28 @@ export default function Home() {
 
   const toggleCompleted = async (task: Task) => {
     try {
+      const newCompleted = !task.isCompleted
       const taskRef = doc(db, 'tasks', task.id)
       await updateDoc(taskRef, {
-        isCompleted: !task.isCompleted,
+        isCompleted: newCompleted,
       })
+
+      // Achievementsの更新
+      const today = getTodayString()
+      const achievementRef = doc(db, 'achievements', `${task.userId}_${today}`)
+      const achievementSnap = await getDoc(achievementRef)
+
+      const currentCount = achievementSnap.exists()
+        ? achievementSnap.data().completedCount || 0
+        : 0
+
+      const newCount = newCompleted ? currentCount + 1 : Math.max(currentCount - 1, 0)
+      await setDoc(achievementRef, {
+        userId: task.userId,
+        date: today,
+        completedCount: newCount,
+      })
+      
       fetchTasks() // 更新後に再取得
     } catch (error) {
       console.error('タスクの更新エラー:', error)
