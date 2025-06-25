@@ -9,9 +9,25 @@ export default function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [role, setRole] = useState('child')
+  const [error, setError] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    // バリデーション
+  if (!email.includes('@')) {
+    setError('メールアドレスの形式が正しくありません')
+    return
+  }
+  if (password.length < 6) {
+    setError('パスワードは6文字以上で入力してください')
+    return
+  }
+  if (role !== 'parent' && role !== 'child') {
+    setError('ロールの選択が正しくありません')
+    return
+  }
+
+  setError('')
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password)
       const uid = userCredential.user.uid
@@ -67,6 +83,7 @@ export default function SignupPage() {
           <option value="child">子ども</option>
         </select>
       </div>
+      {error && <p className="text-red-500 font-semibold">{error}</p>}
 
       <button
         type="submit"
