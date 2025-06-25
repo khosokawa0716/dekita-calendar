@@ -40,14 +40,11 @@ export default function Home() {
   const fetchTasks = async () => {
     try {
       const today = getTodayString()
-      const q = query(
-        collection(db, 'tasks'),
-        where('date', '==', today)
-      )
+      const q = query(collection(db, 'tasks'), where('date', '==', today))
       const snapshot = await getDocs(q)
       console.log('Firestore からのデータ:', snapshot.docs)
       // ドキュメントのデータからタスクを抽出
-      const taskList: Task[] = snapshot.docs.map(doc => {
+      const taskList: Task[] = snapshot.docs.map((doc) => {
         const data = doc.data()
         return {
           id: doc.id,
@@ -67,7 +64,7 @@ export default function Home() {
   }
 
   const addTask = async () => {
-    const testUserId = "test_user_1" // ユーザーIDは適宜変更
+    const testUserId = 'test_user_1' // ユーザーIDは適宜変更
     if (newTitle.trim() === '') return
 
     try {
@@ -77,9 +74,9 @@ export default function Home() {
         isCompleted: false,
         date: today,
         userId: testUserId, // ユーザーIDを追加
-        childComment: "",
-        createdBy: "parent_001",
-        familyId: "family_test_1",
+        childComment: '',
+        createdBy: 'parent_001',
+        familyId: 'family_test_1',
       }
       const docRef = await addDoc(collection(db, 'tasks'), taskData)
       console.log('新しいタスクが追加されました:', docRef.id)
@@ -108,7 +105,9 @@ export default function Home() {
         ? achievementSnap.data().completedCount || 0
         : 0
 
-      const newCount = newCompleted ? currentCount + 1 : Math.max(currentCount - 1, 0)
+      const newCount = newCompleted
+        ? currentCount + 1
+        : Math.max(currentCount - 1, 0)
       await setDoc(achievementRef, {
         userId: task.userId,
         date: today,
@@ -155,12 +154,15 @@ export default function Home() {
                 onChange={() => toggleCompleted(task)}
                 className="form-checkbox h-5 w-5 text-blue-600"
               />
-              <span className={`flex-1 ${task.isCompleted ? 'line-through text-gray-500' : ''}`}>
+              <span
+                className={`flex-1 ${task.isCompleted ? 'line-through text-gray-500' : ''}`}
+              >
                 {task.title}
               </span>
             </li>
           ))}
-        </ul>)}
+        </ul>
+      )}
     </main>
   )
 }

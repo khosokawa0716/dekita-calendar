@@ -16,13 +16,13 @@
 
 ## 🧑‍💻 技術スタック
 
-| 項目 | 内容 |
-|------|------|
-| フロントエンド | Next.js (App Router) |
-| スタイリング | Tailwind CSS + DaisyUI |
-| 認証 | Firebase Authentication（匿名ログイン・メールログイン） |
-| データベース | Firebase Firestore |
-| ホスティング | Vercel or Firebase Hosting（予定） |
+| 項目           | 内容                                                    |
+| -------------- | ------------------------------------------------------- |
+| フロントエンド | Next.js (App Router)                                    |
+| スタイリング   | Tailwind CSS + DaisyUI                                  |
+| 認証           | Firebase Authentication（匿名ログイン・メールログイン） |
+| データベース   | Firebase Firestore                                      |
+| ホスティング   | Vercel or Firebase Hosting（予定）                      |
 
 ---
 
@@ -36,12 +36,15 @@ cd dekita-calendar
 ```
 
 ### 2. 必要なパッケージをインストール
+
 ```bash
 npm install
 ```
 
 ### 3. 環境変数ファイルを作成
+
 プロジェクト直下に .env.local を作成し、以下を記入：
+
 ```bash
 NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
@@ -52,8 +55,11 @@ NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 ```
 
 ### 4. 開発サーバーを起動
+
 プロジェクト直下に .env.local を作成し、以下を記入：
+
 ```bash
 npm run dev
 ```
+
 → http://localhost:3000 にアクセス

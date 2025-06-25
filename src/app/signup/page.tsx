@@ -14,22 +14,26 @@ export default function SignupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     // バリデーション
-  if (!email.includes('@')) {
-    setError('メールアドレスの形式が正しくありません')
-    return
-  }
-  if (password.length < 6) {
-    setError('パスワードは6文字以上で入力してください')
-    return
-  }
-  if (role !== 'parent' && role !== 'child') {
-    setError('ロールの選択が正しくありません')
-    return
-  }
+    if (!email.includes('@')) {
+      setError('メールアドレスの形式が正しくありません')
+      return
+    }
+    if (password.length < 6) {
+      setError('パスワードは6文字以上で入力してください')
+      return
+    }
+    if (role !== 'parent' && role !== 'child') {
+      setError('ロールの選択が正しくありません')
+      return
+    }
 
-  setError('')
+    setError('')
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      )
       const uid = userCredential.user.uid
 
       await setDoc(doc(db, 'users', uid), {
@@ -55,7 +59,7 @@ export default function SignupPage() {
         <input
           type="email"
           value={email}
-          onChange={e => setEmail(e.target.value)}
+          onChange={(e) => setEmail(e.target.value)}
           className="border px-3 py-2 w-full"
           required
         />
@@ -66,7 +70,7 @@ export default function SignupPage() {
         <input
           type="password"
           value={password}
-          onChange={e => setPassword(e.target.value)}
+          onChange={(e) => setPassword(e.target.value)}
           className="border px-3 py-2 w-full"
           required
         />
@@ -76,13 +80,14 @@ export default function SignupPage() {
         <label className="block mb-1">ユーザーの種類</label>
         <select
           value={role}
-          onChange={e => setRole(e.target.value)}
+          onChange={(e) => setRole(e.target.value)}
           className="border px-3 py-2 w-full"
         >
           <option value="parent">保護者</option>
           <option value="child">子ども</option>
         </select>
       </div>
+
       {error && <p className="text-red-500 font-semibold">{error}</p>}
 
       <button
