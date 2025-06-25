@@ -10,6 +10,7 @@ export default function SignupPage() {
   const [password, setPassword] = useState('')
   const [role, setRole] = useState('child')
   const [error, setError] = useState('')
+  const [modalMessage, setModalMessage] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -43,10 +44,9 @@ export default function SignupPage() {
         createdAt: new Date(),
       })
 
-      alert('登録成功！')
-    } catch (error) {
-      console.error('登録エラー:', error)
-      alert('登録に失敗しました')
+      setModalMessage('登録に成功しました！')
+    } catch (error: any) {
+      setModalMessage(`登録に失敗しました: ${error.message}`)
     }
   }
 
@@ -96,6 +96,20 @@ export default function SignupPage() {
       >
         登録する
       </button>
+
+      {modalMessage && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded p-6 shadow-lg text-center w-80">
+            <p className="mb-4">{modalMessage}</p>
+            <button
+              onClick={() => setModalMessage(null)}
+              className="bg-blue-500 text-white px-4 py-2 rounded"
+            >
+              閉じる
+            </button>
+          </div>
+        </div>
+      )}
     </form>
   )
 }
