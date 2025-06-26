@@ -56,6 +56,12 @@ export default function LoginPage() {
           ログイン
         </button>
       </form>
+      <p className="mt-4 text-center text-sm">
+        アカウントをお持ちでない方は{' '}
+        <a href="/signup" className="text-blue-500 hover:underline">
+          新規登録はこちら
+        </a>
+      </p>
     </main>
   )
 }

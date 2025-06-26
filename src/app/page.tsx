@@ -13,6 +13,8 @@ import {
   setDoc,
   getDoc,
 } from 'firebase/firestore'
+import { useAuthRedirect } from '@/hooks/useAuthRedirect'
+import LogoutButton from '@/components/LogoutButton'
 
 type Task = {
   id: string
@@ -34,6 +36,7 @@ function getTodayString() {
 }
 
 export default function Home() {
+  useAuthRedirect() // 認証リダイレクトフックを使用
   const [tasks, setTasks] = useState<Task[]>([])
   const [newTitle, setNewTitle] = useState('')
 
@@ -126,6 +129,8 @@ export default function Home() {
 
   return (
     <main className="p-4">
+      <h1 className="text-2xl font-bold mb-4">今日のタスク</h1>
+      <LogoutButton />
       <div className="mb-4">
         <input
           type="text"
