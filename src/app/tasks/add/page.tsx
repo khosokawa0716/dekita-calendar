@@ -6,7 +6,7 @@ import { db } from '@/lib/firebase'
 import { getTodayString } from '@/lib/dateUtils'
 import { useAuthRedirect } from '@/hooks/useAuthRedirect'
 
-export default function TaskCreatePage() {
+export default function TaskAddPage() {
   useAuthRedirect()
 
   const [newTitle, setNewTitle] = useState('')
