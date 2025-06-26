@@ -4,8 +4,11 @@ import { useState } from 'react'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import { useRouter } from 'next/navigation'
+import { useAlreadyLoggedInRedirect } from '@/hooks/useAlreadyLoggedInRedirect'
 
 export default function LoginPage() {
+  // 既にログインしている場合はトップページにリダイレクト
+  useAlreadyLoggedInRedirect()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')

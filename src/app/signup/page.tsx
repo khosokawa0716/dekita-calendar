@@ -4,8 +4,12 @@ import { useState } from 'react'
 import { createUserWithEmailAndPassword } from 'firebase/auth'
 import { auth, db } from '@/lib/firebase'
 import { doc, setDoc } from 'firebase/firestore'
+import { useAlreadyLoggedInRedirect } from '@/hooks/useAlreadyLoggedInRedirect'
+import Link from 'next/link'
 
 export default function SignupPage() {
+  // 既にログインしている場合はトップページにリダイレクト
+  useAlreadyLoggedInRedirect()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [role, setRole] = useState('child')
@@ -51,65 +55,73 @@ export default function SignupPage() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="p-4 space-y-4 max-w-md mx-auto">
-      <h1 className="text-xl font-bold">ユーザー登録</h1>
+    <main>
+      <form onSubmit={handleSubmit} className="p-4 space-y-4 max-w-md mx-auto">
+        <h1 className="text-xl font-bold">ユーザー登録</h1>
 
-      <div>
-        <label className="block mb-1">メールアドレス</label>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="border px-3 py-2 w-full"
-          required
-        />
-      </div>
-
-      <div>
-        <label className="block mb-1">パスワード（6文字以上）</label>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="border px-3 py-2 w-full"
-          required
-        />
-      </div>
-
-      <div>
-        <label className="block mb-1">ユーザーの種類</label>
-        <select
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
-          className="border px-3 py-2 w-full"
-        >
-          <option value="parent">保護者</option>
-          <option value="child">子ども</option>
-        </select>
-      </div>
-
-      {error && <p className="text-red-500 font-semibold">{error}</p>}
-
-      <button
-        type="submit"
-        className="bg-blue-500 text-white px-4 py-2 rounded"
-      >
-        登録する
-      </button>
-
-      {modalMessage && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded p-6 shadow-lg text-center w-80">
-            <p className="mb-4">{modalMessage}</p>
-            <button
-              onClick={() => setModalMessage(null)}
-              className="bg-blue-500 text-white px-4 py-2 rounded"
-            >
-              閉じる
-            </button>
-          </div>
+        <div>
+          <label className="block mb-1">メールアドレス</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="border px-3 py-2 w-full"
+            required
+          />
         </div>
-      )}
-    </form>
+
+        <div>
+          <label className="block mb-1">パスワード（6文字以上）</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="border px-3 py-2 w-full"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block mb-1">ユーザーの種類</label>
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            className="border px-3 py-2 w-full"
+          >
+            <option value="parent">保護者</option>
+            <option value="child">子ども</option>
+          </select>
+        </div>
+
+        {error && <p className="text-red-500 font-semibold">{error}</p>}
+
+        <button
+          type="submit"
+          className="bg-blue-500 text-white px-4 py-2 rounded"
+        >
+          登録する
+        </button>
+
+        {modalMessage && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded p-6 shadow-lg text-center w-80">
+              <p className="mb-4">{modalMessage}</p>
+              <button
+                onClick={() => setModalMessage(null)}
+                className="bg-blue-500 text-white px-4 py-2 rounded"
+              >
+                閉じる
+              </button>
+            </div>
+          </div>
+        )}
+      </form>
+      <p className="text-center mt-4">
+        すでにアカウントをお持ちですか？{' '}
+        <Link href="/login" className="text-blue-500 hover:underline">
+          ログインはこちら
+        </Link>
+      </p>
+    </main>
   )
 }
