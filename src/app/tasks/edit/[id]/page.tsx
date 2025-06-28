@@ -112,7 +112,7 @@ export default function TaskListPage() {
                 {task.title}
               </span>
               <Link
-                href={`/tasks/edit/${task.id}`}
+                href={`/task-edit/${task.id}`}
                 className="text-blue-500 underline text-sm"
               >
                 編集する
