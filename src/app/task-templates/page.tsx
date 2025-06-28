@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { collection, getDocs, query, where } from 'firebase/firestore'
+import { collection, getDocs, query, where, addDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { useUserInfo } from '@/hooks/useUserInfo'
 import Link from 'next/link'
@@ -49,6 +49,29 @@ export default function TaskTemplateListPage() {
 
   if (loading) return <p>読み込み中...</p>
 
+  const handleAddTask = async (template: TaskTemplate) => {
+    if (!userInfo) return
+
+    const today = new Date()
+    const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+
+    try {
+      await addDoc(collection(db, 'tasks'), {
+        title: template.title,
+        isCompleted: false,
+        date: dateStr,
+        userId: userInfo.id,
+        createdBy: userInfo.id,
+        familyId: userInfo.familyId,
+        childComment: '',
+      })
+      alert('今日のタスクに追加しました')
+    } catch (error) {
+      console.error('タスク追加エラー:', error)
+      alert('追加に失敗しました')
+    }
+  }
+
   return (
     <main className="p-4">
       <h1 className="text-2xl font-bold mb-4">テンプレート一覧</h1>
@@ -63,8 +86,14 @@ export default function TaskTemplateListPage() {
       ) : (
         <ul className="space-y-2">
           {templates.map((template) => (
-            <li key={template.id} className="p-2 border rounded">
+            <li key={template.id} className="p-2 bg-gray-100 rounded shadow">
               {template.title}
+              <button
+                onClick={() => handleAddTask(template)}
+                className="ml-2 px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+              >
+                今日のタスクに追加
+              </button>
             </li>
           ))}
         </ul>
