@@ -1,7 +1,15 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { collection, getDocs, query, where, addDoc } from 'firebase/firestore'
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  addDoc,
+  deleteDoc,
+  doc,
+} from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { useUserInfo } from '@/hooks/useUserInfo'
 import Link from 'next/link'
@@ -72,6 +80,21 @@ export default function TaskTemplateListPage() {
     }
   }
 
+  const handleDelete = async (id: string) => {
+    const confirmed = confirm('このテンプレートを削除してもよろしいですか？')
+    if (!confirmed) return
+
+    try {
+      await deleteDoc(doc(db, 'taskTemplates', id))
+      alert('テンプレートを削除しました')
+      // 一覧の再取得 or ローカルstateから削除
+      setTemplates((prev) => prev.filter((t) => t.id !== id))
+    } catch (error) {
+      console.error('テンプレート削除エラー:', error)
+      alert('削除に失敗しました')
+    }
+  }
+
   return (
     <main className="p-4">
       <h1 className="text-2xl font-bold mb-4">テンプレート一覧</h1>
@@ -94,6 +117,18 @@ export default function TaskTemplateListPage() {
               >
                 今日のタスクに追加
               </button>
+              <button
+                onClick={() => handleDelete(template.id)}
+                className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+              >
+                削除
+              </button>
+              <div className="text-sm text-gray-500">
+                作成者: {template.createdBy} | 作成日:{' '}
+                {new Date(
+                  template.createdAt.seconds * 1000
+                ).toLocaleDateString()}
+              </div>
             </li>
           ))}
         </ul>
