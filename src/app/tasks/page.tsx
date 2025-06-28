@@ -14,6 +14,7 @@ import {
 } from 'firebase/firestore'
 import { useAuthRedirect } from '@/hooks/useAuthRedirect'
 import { getTodayString } from '@/lib/dateUtils' // 共通化していればこちらを使用
+import Link from 'next/link'
 
 type Task = {
   id: string
@@ -110,6 +111,12 @@ export default function TaskListPage() {
               >
                 {task.title}
               </span>
+              <Link
+                href={`/task-edit/${task.id}`}
+                className="text-blue-500 underline text-sm"
+              >
+                編集する
+              </Link>
             </li>
           ))}
         </ul>
