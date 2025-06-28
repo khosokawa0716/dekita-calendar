@@ -1,126 +1,88 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useParams, useRouter } from 'next/navigation'
 import { db } from '@/lib/firebase'
-import {
-  doc,
-  updateDoc,
-  collection,
-  getDocs,
-  query,
-  where,
-  getDoc,
-  setDoc,
-} from 'firebase/firestore'
-import { useAuthRedirect } from '@/hooks/useAuthRedirect'
-import { getTodayString } from '@/lib/dateUtils' // 共通化していればこちらを使用
-import Link from 'next/link'
+import { doc, getDoc, updateDoc } from 'firebase/firestore'
+import { auth } from '@/lib/firebase'
+import { onAuthStateChanged } from 'firebase/auth'
 
-type Task = {
-  id: string
-  title: string
-  isCompleted: boolean
-  date: string
-  userId: string
-  childComment: string
-  createdBy: string
-  familyId: string
-}
-
-export default function TaskListPage() {
-  useAuthRedirect()
-  const [tasks, setTasks] = useState<Task[]>([])
-
-  const fetchTasks = async () => {
-    try {
-      const today = getTodayString()
-      const q = query(collection(db, 'tasks'), where('date', '==', today))
-      const snapshot = await getDocs(q)
-      const taskList: Task[] = snapshot.docs.map((doc) => {
-        const data = doc.data()
-        return {
-          id: doc.id,
-          title: data.title,
-          isCompleted: data.isCompleted,
-          date: data.date,
-          userId: data.userId,
-          childComment: data.childComment,
-          createdBy: data.createdBy,
-          familyId: data.familyId,
-        }
-      })
-      setTasks(taskList)
-    } catch (error) {
-      console.error('タスク取得エラー:', error)
-    }
-  }
-
-  const toggleCompleted = async (task: Task) => {
-    try {
-      const newCompleted = !task.isCompleted
-      const taskRef = doc(db, 'tasks', task.id)
-      await updateDoc(taskRef, {
-        isCompleted: newCompleted,
-      })
-
-      const today = getTodayString()
-      const achievementRef = doc(db, 'achievements', `${task.userId}_${today}`)
-      const achievementSnap = await getDoc(achievementRef)
-
-      const currentCount = achievementSnap.exists()
-        ? achievementSnap.data().completedCount || 0
-        : 0
-
-      const newCount = newCompleted
-        ? currentCount + 1
-        : Math.max(currentCount - 1, 0)
-
-      await setDoc(achievementRef, {
-        userId: task.userId,
-        date: today,
-        completedCount: newCount,
-      })
-
-      fetchTasks()
-    } catch (error) {
-      console.error('更新エラー:', error)
-    }
-  }
+export default function TaskEditPage() {
+  const { id } = useParams()
+  const router = useRouter()
+  const [title, setTitle] = useState('')
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchTasks()
-  }, [])
+    const fetchTask = async () => {
+      setLoading(true)
+      if (!id || typeof id !== 'string') return
+
+      onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+          router.push('/login')
+          return
+        }
+
+        const taskRef = doc(db, 'tasks', id)
+        const taskSnap = await getDoc(taskRef)
+
+        if (!taskSnap.exists()) {
+          alert('タスクが見つかりません')
+          router.push('/tasks')
+          return
+        }
+        const data = taskSnap.data()
+
+        console.log('タスクデータ:', taskSnap.data())
+        console.log('ユーザーID:', user.uid)
+        console.log('タスクID:', id)
+        console.log('createBy:', data.createdBy)
+        if (data.createdBy !== user.uid) {
+          alert('このタスクを編集する権限がありません')
+          router.push('/tasks')
+          return
+        }
+
+        setTitle(data.title || '')
+        setLoading(false)
+      })
+
+      const taskRef = doc(db, 'tasks', id)
+      const taskSnap = await getDoc(taskRef)
+      if (taskSnap.exists()) {
+        const data = taskSnap.data()
+        setTitle(data.title || '')
+      }
+      setLoading(false)
+    }
+    fetchTask()
+  }, [id])
+
+  const handleUpdate = async () => {
+    if (!id || typeof id !== 'string') return
+    const taskRef = doc(db, 'tasks', id)
+    await updateDoc(taskRef, { title })
+    router.push('/tasks') // 保存後に一覧へ戻る
+  }
+
+  if (loading) return <p>読み込み中...</p>
 
   return (
     <main className="p-4">
-      <h1 className="text-2xl font-bold mb-4">今日のタスク一覧</h1>
-      {tasks.length === 0 ? (
-        <p className="text-gray-500">今日のタスクはありません。</p>
-      ) : (
-        <ul className="list-none space-y-2">
-          {tasks.map((task) => (
-            <li key={task.id} className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                checked={task.isCompleted}
-                onChange={() => toggleCompleted(task)}
-                className="form-checkbox h-5 w-5 text-blue-600"
-              />
-              <span
-                className={`flex-1 ${task.isCompleted ? 'line-through text-gray-500' : ''}`}
-              >
-                {task.title}
-              </span>
-              <Link
-                href={`/task-edit/${task.id}`}
-                className="text-blue-500 underline text-sm"
-              >
-                編集する
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
+      <h1 className="text-2xl font-bold mb-4">タスク編集</h1>
+      <input
+        type="text"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        className="border px-2 py-1 rounded w-full"
+      />
+      <button
+        onClick={handleUpdate}
+        className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+      >
+        保存する
+      </button>
     </main>
   )
 }

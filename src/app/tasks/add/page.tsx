@@ -5,14 +5,16 @@ import { addDoc, collection } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { getTodayString } from '@/lib/dateUtils'
 import { useAuthRedirect } from '@/hooks/useAuthRedirect'
+import { useUserInfo } from '@/hooks/useUserInfo'
 
 export default function TaskAddPage() {
   useAuthRedirect()
+  const { userInfo } = useUserInfo()
 
   const [newTitle, setNewTitle] = useState('')
+  if (!userInfo) return <div>Loading...</div>
 
   const addTask = async () => {
-    const testUserId = 'test_user_1' // 仮のユーザーID
     if (newTitle.trim() === '') return
 
     try {
@@ -21,10 +23,10 @@ export default function TaskAddPage() {
         title: newTitle,
         isCompleted: false,
         date: today,
-        userId: testUserId,
+        userId: userInfo.id,
         childComment: '',
-        createdBy: 'parent_001',
-        familyId: 'family_test_1',
+        createdBy: userInfo.id,
+        familyId: userInfo.familyId,
       }
       await addDoc(collection(db, 'tasks'), taskData)
       alert('タスクを登録しました')
