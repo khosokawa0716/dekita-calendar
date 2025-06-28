@@ -11,7 +11,17 @@ export default function TaskTemplateCreatePage() {
   const router = useRouter()
   const { userInfo } = useUserInfo() // ユーザー情報を取得するカスタムフックを使用
   const [title, setTitle] = useState('')
+  const [repeatType, setRepeatType] = useState<
+    'none' | 'everyday' | 'weekday' | 'custom'
+  >('none')
+  const [customDays, setCustomDays] = useState<number[]>([])
   const [loading, setLoading] = useState(false)
+
+  const toggleDay = (day: number) => {
+    setCustomDays((prev) =>
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
+    )
+  }
 
   const handleSubmit = async () => {
     console.log('テンプレート登録処理開始')
@@ -23,14 +33,22 @@ export default function TaskTemplateCreatePage() {
       return
     }
 
+    if (repeatType === 'custom' && customDays.length === 0) {
+      alert('曜日を1つ以上選択してください')
+      return
+    }
+
     setLoading(true)
     try {
-      await addDoc(collection(db, 'taskTemplates'), {
+      const templateData = {
         title,
         createdBy: userInfo.id,
-        familyId: userInfo.familyId, // ユーザーのファミリーIDを使用
-        createdAt: serverTimestamp(), // 作成日時を自動で設定
-      })
+        familyId: userInfo.familyId,
+        createdAt: serverTimestamp(),
+        repeatType,
+        ...(repeatType === 'custom' ? { repeatDays: customDays } : {}),
+      }
+      await addDoc(collection(db, 'taskTemplates'), templateData)
       alert('テンプレートを追加しました')
       router.push('/tasks') // 登録後に一覧などへ遷移（必要に応じて変更）
     } catch (error) {
@@ -51,6 +69,38 @@ export default function TaskTemplateCreatePage() {
         onChange={(e) => setTitle(e.target.value)}
         className="border px-2 py-1 rounded w-full mb-4"
       />
+
+      <div>
+        <label className="block font-semibold mb-1">繰り返し設定</label>
+        <select
+          value={repeatType}
+          onChange={(e) => setRepeatType(e.target.value as any)}
+          className="border px-2 py-1 rounded w-full"
+        >
+          <option value="none">繰り返しなし</option>
+          <option value="everyday">毎日</option>
+          <option value="weekday">平日のみ</option>
+          <option value="custom">曜日を指定</option>
+        </select>
+      </div>
+
+      {repeatType === 'custom' && (
+        <div>
+          <label className="block font-semibold mb-1">曜日を選択</label>
+          <div className="flex gap-2 flex-wrap">
+            {['日', '月', '火', '水', '木', '金', '土'].map((label, index) => (
+              <label key={index} className="flex items-center space-x-1">
+                <input
+                  type="checkbox"
+                  checked={customDays.includes(index)}
+                  onChange={() => toggleDay(index)}
+                />
+                <span>{label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
       <button
         onClick={handleSubmit}
         disabled={loading}
