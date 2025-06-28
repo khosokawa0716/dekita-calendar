@@ -117,6 +117,12 @@ export default function TaskTemplateListPage() {
               >
                 今日のタスクに追加
               </button>
+              <Link
+                href={`/task-templates/edit/${template.id}`}
+                className="text-blue-500 underline hover:text-blue-700"
+              >
+                編集
+              </Link>
               <button
                 onClick={() => handleDelete(template.id)}
                 className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
