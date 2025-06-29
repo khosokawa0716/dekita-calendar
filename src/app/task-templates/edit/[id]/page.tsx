@@ -14,17 +14,19 @@ export default function TaskTemplateEditPage() {
 
   const { userInfo, loading } = useUserInfo()
   const [title, setTitle] = useState('')
+  const [repeatType, setRepeatType] = useState<
+    'none' | 'everyday' | 'weekday' | 'custom'
+  >('none')
+  const [repeatDays, setRepeatDays] = useState<number[]>([])
   const [templateLoaded, setTemplateLoaded] = useState(false)
 
-  useEffect(() => {
-    console.log(
-      'useEffect called with userInfo:',
-      userInfo,
-      'templateId:',
-      templateId,
-      'loading:',
-      loading
+  const toggleDay = (day: number) => {
+    setRepeatDays((prev) =>
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
     )
+  }
+
+  useEffect(() => {
     const fetchTemplate = async () => {
       if (loading || !userInfo || !templateId) {
         console.log('まだ準備ができていません:', {
@@ -43,7 +45,7 @@ export default function TaskTemplateEditPage() {
         templateSnap.data()
       )
       if (!templateSnap.exists()) {
-        alert('テンプレートが見つかりません🐸')
+        alert('テンプレートが見つかりません')
         router.push('/tasks')
         return
       }
@@ -56,6 +58,8 @@ export default function TaskTemplateEditPage() {
       }
 
       setTitle(data.title)
+      setRepeatType(data.repeatType ?? 'none')
+      setRepeatDays(data.repeatDays ?? [])
       setTemplateLoaded(true)
     }
 
@@ -72,6 +76,8 @@ export default function TaskTemplateEditPage() {
       const templateRef = doc(db, 'taskTemplates', templateId!)
       await updateDoc(templateRef, {
         title,
+        repeatType,
+        repeatDays: repeatType === 'custom' ? repeatDays : [],
       })
       alert('テンプレートを更新しました')
       router.push('/tasks')
@@ -93,6 +99,34 @@ export default function TaskTemplateEditPage() {
         className="border px-2 py-1 rounded w-full mb-4"
         placeholder="テンプレート名"
       />
+      <div>
+        <label className="font-semibold block mb-1">繰り返し設定</label>
+        <select
+          value={repeatType}
+          onChange={(e) => setRepeatType(e.target.value as any)}
+          className="border px-2 py-1 rounded"
+        >
+          <option value="none">繰り返しなし</option>
+          <option value="everyday">毎日</option>
+          <option value="weekday">平日</option>
+          <option value="custom">曜日指定</option>
+        </select>
+      </div>
+
+      {repeatType === 'custom' && (
+        <div className="flex gap-2 flex-wrap">
+          {['日', '月', '火', '水', '木', '金', '土'].map((label, i) => (
+            <label key={i} className="flex items-center gap-1">
+              <input
+                type="checkbox"
+                checked={repeatDays.includes(i)}
+                onChange={() => toggleDay(i)}
+              />
+              {label}
+            </label>
+          ))}
+        </div>
+      )}
       <button
         onClick={handleUpdate}
         className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
