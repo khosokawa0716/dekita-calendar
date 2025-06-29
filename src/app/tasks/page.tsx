@@ -13,7 +13,7 @@ import {
   setDoc,
 } from 'firebase/firestore'
 import { useAuthRedirect } from '@/hooks/useAuthRedirect'
-import { getTodayString } from '@/lib/dateUtils' // 共通化していればこちらを使用
+import { getTodayString } from '@/lib/dateUtils'
 import Link from 'next/link'
 
 type Task = {

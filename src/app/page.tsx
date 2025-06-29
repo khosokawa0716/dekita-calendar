@@ -18,6 +18,9 @@ export default function Home() {
         <Link href="/tasks/add" className="text-blue-600 underline block">
           ➕ タスクを登録する
         </Link>
+        <Link href="/task-templates" className="text-blue-600 underline block">
+          🗒️ テンプレート一覧へ
+        </Link>
       </nav>
 
       <div className="mt-4">

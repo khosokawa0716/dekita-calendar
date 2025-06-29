@@ -6,6 +6,8 @@ import { doc, getDoc, updateDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { useUserInfo } from '@/hooks/useUserInfo'
 
+const nextPage = '/task-templates'
+
 export default function TaskTemplateEditPage() {
   const router = useRouter()
 
@@ -46,14 +48,14 @@ export default function TaskTemplateEditPage() {
       )
       if (!templateSnap.exists()) {
         alert('テンプレートが見つかりません')
-        router.push('/tasks')
+        router.push(nextPage)
         return
       }
       console.log('ユーザー情報:', userInfo, 'テンプレートID:', templateId)
       const data = templateSnap.data()
       if (data.createdBy !== userInfo.id) {
         alert('このテンプレートを編集する権限がありません')
-        router.push('/tasks')
+        router.push(nextPage)
         return
       }
 
@@ -80,7 +82,7 @@ export default function TaskTemplateEditPage() {
         repeatDays: repeatType === 'custom' ? repeatDays : [],
       })
       alert('テンプレートを更新しました')
-      router.push('/tasks')
+      router.push(nextPage)
     } catch (error) {
       console.error('テンプレート更新エラー:', error)
       alert('更新に失敗しました')

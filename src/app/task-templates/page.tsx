@@ -13,6 +13,7 @@ import {
 import { db } from '@/lib/firebase'
 import { useUserInfo } from '@/hooks/useUserInfo'
 import Link from 'next/link'
+import { getTodayString } from '@/lib/dateUtils'
 
 type TaskTemplate = {
   id: string
@@ -71,6 +72,79 @@ export default function TaskTemplateListPage() {
 
   if (loading) return <p>読み込み中...</p>
 
+  const handleGenerateTodayTasks = async () => {
+    if (!userInfo) {
+      console.log('userInfo が未取得のため中断')
+      return
+    }
+
+    const today = new Date()
+    const day = today.getDay() // 0:日曜, 1:月曜...
+    const todayStr = getTodayString() // 例: "2025-06-27"
+    console.log('本日の日付:', todayStr, '曜日:', day)
+
+    try {
+      const templatesRef = collection(db, 'taskTemplates')
+      const q = query(
+        templatesRef,
+        where('createdBy', '==', userInfo.id),
+        where('familyId', '==', userInfo.familyId)
+      )
+      const snapshot = await getDocs(q)
+      console.log('テンプレートの取得件数:', snapshot.docs.length)
+
+      const matchedTemplates = snapshot.docs.filter((doc) => {
+        const data = doc.data()
+        const type = data.repeatType
+        console.log('テンプレート:', data.title, 'repeatType:', type)
+        if (type === 'everyday') return true
+        if (type === 'weekday' && day >= 1 && day <= 5) return true
+        if (type === 'custom' && Array.isArray(data.repeatDays)) {
+          return data.repeatDays.includes(day)
+        }
+        return false
+      })
+      console.log('マッチしたテンプレート数:', matchedTemplates.length)
+
+      for (const template of matchedTemplates) {
+        const data = template.data()
+        console.log('タスク生成対象テンプレート:', data)
+        // 🔒 同じテンプレートIDの今日のタスクが既に存在しているかチェック
+        const tasksRef = collection(db, 'tasks')
+        const taskQuery = query(
+          tasksRef,
+          where('createdBy', '==', userInfo.id),
+          where('date', '==', todayStr),
+          where('title', '==', data.title) // ← タイトルで判別（必要なら他のフィールドも追加）
+        )
+        const existingTasks = await getDocs(taskQuery)
+        if (!existingTasks.empty) {
+          console.log(`既にタスクあり: ${data.title}`)
+          continue // スキップ
+        }
+
+        const taskData = {
+          title: data.title,
+          isCompleted: false,
+          date: todayStr,
+          userId: userInfo.id,
+          familyId: userInfo.familyId,
+          createdBy: userInfo.id,
+          childComment: '',
+        }
+
+        console.log('登録するタスクデータ:', taskData)
+        await addDoc(collection(db, 'tasks'), taskData)
+        console.log('タスクを登録しました:', data.title)
+      }
+
+      alert('本日のタスクを生成しました🐸')
+    } catch (error) {
+      console.error('タスク生成エラー:', error)
+      alert('生成に失敗しました')
+    }
+  }
+
   const handleAddTask = async (template: TaskTemplate) => {
     if (!userInfo) return
 
@@ -112,6 +186,12 @@ export default function TaskTemplateListPage() {
   return (
     <main className="p-4">
       <h1 className="text-2xl font-bold mb-4">テンプレート一覧</h1>
+      <button
+        onClick={handleGenerateTodayTasks}
+        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+      >
+        本日のタスクを生成
+      </button>
       <Link
         href="/task-templates/create"
         className="text-blue-500 underline mb-4 block"

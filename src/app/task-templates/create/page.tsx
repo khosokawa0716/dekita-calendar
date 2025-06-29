@@ -50,7 +50,7 @@ export default function TaskTemplateCreatePage() {
       }
       await addDoc(collection(db, 'taskTemplates'), templateData)
       alert('テンプレートを追加しました')
-      router.push('/tasks') // 登録後に一覧などへ遷移（必要に応じて変更）
+      router.push('/task-templates')
     } catch (error) {
       console.error('テンプレート追加エラー:', error)
       alert('登録に失敗しました')
