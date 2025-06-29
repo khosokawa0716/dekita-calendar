@@ -19,7 +19,24 @@ type TaskTemplate = {
   title: string
   createdBy: string
   familyId: string
+  repeatType?: 'none' | 'everyday' | 'weekday' | 'custom'
+  repeatDays?: number[]
   createdAt: any
+}
+
+const repeatTypeLabel = (type: string, days?: number[]) => {
+  switch (type) {
+    case 'everyday':
+      return '毎日'
+    case 'weekday':
+      return '平日'
+    case 'custom':
+      if (!days || days.length === 0) return '曜日指定なし'
+      const labels = ['日', '月', '火', '水', '木', '金', '土']
+      return `曜日指定: ${days.map((d) => labels[d]).join(', ')}`
+    default:
+      return ''
+  }
 }
 
 export default function TaskTemplateListPage() {
@@ -36,16 +53,13 @@ export default function TaskTemplateListPage() {
           where('familyId', '==', userInfo.familyId)
         )
         const snapshot = await getDocs(q)
-        const list: TaskTemplate[] = snapshot.docs.map((doc) => {
+        const list = snapshot.docs.map((doc) => {
           const data = doc.data()
           return {
             id: doc.id,
-            title: data.title,
-            createdBy: data.createdBy,
-            familyId: data.familyId,
-            createdAt: data.createdAt,
+            ...data,
           }
-        })
+        }) as TaskTemplate[]
         setTemplates(list)
       } catch (error) {
         console.error('テンプレート取得エラー:', error)
@@ -110,7 +124,15 @@ export default function TaskTemplateListPage() {
         <ul className="space-y-2">
           {templates.map((template) => (
             <li key={template.id} className="p-2 bg-gray-100 rounded shadow">
-              {template.title}
+              <div>
+                <div className="font-semibold">{template.title}</div>
+                <div className="text-sm text-gray-600">
+                  {repeatTypeLabel(
+                    template.repeatType || 'none',
+                    template.repeatDays
+                  )}
+                </div>
+              </div>
               <button
                 onClick={() => handleAddTask(template)}
                 className="ml-2 px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
