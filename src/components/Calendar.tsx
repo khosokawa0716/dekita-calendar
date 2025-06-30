@@ -127,6 +127,18 @@ export default function Calendar({ taskData = {} }: Props) {
   // 現在表示している月の日付を管理するstate
   const [currentDate, setCurrentDate] = useState(new Date())
 
+  const goToPreviousMonth = () => {
+    setCurrentDate(
+      new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
+    )
+  }
+
+  const goToNextMonth = () => {
+    setCurrentDate(
+      new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
+    )
+  }
+
   // カレンダーに表示する全ての日付を取得（前後の月の日付も含む）
   const calendarDays = getDaysInCalendar(currentDate)
   // 現在表示中の月の開始日を取得
@@ -172,6 +184,23 @@ export default function Calendar({ taskData = {} }: Props) {
       {/* 月年の表示 */}
       <div className="text-xl font-bold mb-2">
         {formatDate(currentDate, 'yyyy年MM月')}
+      </div>
+      <div className="flex items-center justify-between mb-2">
+        <button
+          onClick={goToPreviousMonth}
+          className="text-sm text-blue-500 hover:underline"
+        >
+          ◀ 前の月
+        </button>
+        <div className="text-xl font-bold">
+          {formatDate(currentDate, 'yyyy年MM月')}
+        </div>
+        <button
+          onClick={goToNextMonth}
+          className="text-sm text-blue-500 hover:underline"
+        >
+          次の月 ▶
+        </button>
       </div>
 
       {/* 曜日のヘッダー */}
