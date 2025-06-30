@@ -15,6 +15,9 @@ export default function CalendarPage() {
   const [taskData, setTaskData] = useState<TaskData>({})
   const [currentDate] = useState(new Date()) // 現在の月を保持
 
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [tasksForSelectedDate, setTasksForSelectedDate] = useState<any[]>([])
+
   useEffect(() => {
     if (!userInfo) return
 
@@ -64,10 +67,52 @@ export default function CalendarPage() {
     fetchTasks()
   }, [userInfo, currentDate])
 
+  // 日付がクリックされたときにタスクを取得してモーダル表示
+  const handleDateClick = async (dateStr: string) => {
+    if (!userInfo) return
+
+    const tasksRef = collection(db, 'tasks')
+    const q = query(
+      tasksRef,
+      where('date', '==', dateStr),
+      where('userId', '==', userInfo.id),
+      where('familyId', '==', userInfo.familyId)
+    )
+    const snapshot = await getDocs(q)
+    const tasks = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+
+    setTasksForSelectedDate(tasks)
+    setSelectedDate(dateStr)
+  }
+
   return (
     <main className="p-4">
       <h1 className="text-2xl font-bold mb-4">カレンダー表示</h1>
-      <Calendar taskData={taskData} />
+      <Calendar taskData={taskData} onDateClick={handleDateClick} />
+      {selectedDate && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <div className="bg-white p-4 rounded shadow-lg w-96">
+            <h2 className="text-lg font-bold mb-2">{selectedDate} のタスク</h2>
+            <ul className="max-h-60 overflow-y-auto">
+              {tasksForSelectedDate.length > 0 ? (
+                tasksForSelectedDate.map((task) => (
+                  <li key={task.id} className="py-1 border-b last:border-none">
+                    ✅ {task.title}
+                  </li>
+                ))
+              ) : (
+                <li className="text-gray-500">タスクはありません</li>
+              )}
+            </ul>
+            <button
+              onClick={() => setSelectedDate(null)}
+              className="mt-4 bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"
+            >
+              閉じる
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   )
 }
