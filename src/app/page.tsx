@@ -15,6 +15,9 @@ export default function Home() {
         <Link href="/tasks" className="text-blue-600 underline block">
           ✅ 今日のタスク一覧へ
         </Link>
+        <Link href="/tasks/calendar" className="text-blue-600 underline block">
+          📅 カレンダー表示へ
+        </Link>
         <Link href="/tasks/add" className="text-blue-600 underline block">
           ➕ タスクを登録する
         </Link>
