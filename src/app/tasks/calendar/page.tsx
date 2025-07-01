@@ -5,6 +5,7 @@ import { collection, getDocs, query, where } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { useUserInfo } from '@/hooks/useUserInfo'
 import Calendar from '@/components/Calendar'
+import TaskEditModal, { Task } from '@/components/TaskModalEdit'
 
 type TaskData = {
   [dateStr: string]: { total: number; completed: number }
@@ -17,6 +18,8 @@ export default function CalendarPage() {
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [tasksForSelectedDate, setTasksForSelectedDate] = useState<any[]>([])
+
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null)
 
   useEffect(() => {
     if (!userInfo) return
@@ -85,6 +88,14 @@ export default function CalendarPage() {
     setSelectedDate(dateStr)
   }
 
+  const openModal = (task: Task) => {
+    setSelectedTask(task)
+  }
+
+  const closeModal = () => {
+    setSelectedTask(null)
+  }
+
   return (
     <main className="p-4">
       <h1 className="text-2xl font-bold mb-4">カレンダー表示</h1>
@@ -98,10 +109,19 @@ export default function CalendarPage() {
                 tasksForSelectedDate.map((task) => (
                   <li key={task.id} className="py-1 border-b last:border-none">
                     ✅ {task.title}
+                    <button
+                      onClick={() => openModal(task)}
+                      className="ml-2 text-blue-500 hover:underline"
+                    >
+                      編集
+                    </button>
                   </li>
                 ))
               ) : (
                 <li className="text-gray-500">タスクはありません</li>
+              )}
+              {selectedTask && (
+                <TaskEditModal task={selectedTask} onClose={closeModal} />
               )}
             </ul>
             <button
