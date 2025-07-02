@@ -15,6 +15,9 @@ export default function RootLayout({
           <Link href="/tasks/add">タスク作成</Link>
           <Link href="/login">ログイン</Link>
           <Link href="/signup">新規登録</Link>
+          <Link href="/task-templates">テンプレート</Link>
+          <Link href="/tasks/calendar">カレンダー</Link>
+          <Link href="/setting">設定</Link>
         </nav>
         <main className="p-4">{children}</main>
       </body>
