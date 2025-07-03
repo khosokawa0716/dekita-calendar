@@ -20,8 +20,11 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     )
       return
 
-    // role または familyId が未設定なら /setting へ強制移動
-    if (!userInfo?.role || !userInfo?.familyId) {
+    // ログインしていない場合は何もしない（各ページで個別にリダイレクト処理）
+    if (!userInfo) return
+
+    // ログイン済みだが role または familyId が未設定なら /setting へ強制移動
+    if (!userInfo.role || !userInfo.familyId) {
       router.push('/setting')
     }
   }, [userInfo, loading, pathname, router])

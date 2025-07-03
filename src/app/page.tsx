@@ -2,11 +2,39 @@
 
 import LogoutButton from '@/components/LogoutButton'
 import Link from 'next/link'
-import { useAuthRedirect } from '@/hooks/useAuthRedirect'
+import { useUserInfo } from '@/hooks/useUserInfo'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 
 export default function Home() {
-  useAuthRedirect()
+  const { userInfo, loading } = useUserInfo()
+  const router = useRouter()
 
+  useEffect(() => {
+    if (!loading && !userInfo) {
+      router.push('/login')
+    }
+  }, [userInfo, loading, router])
+
+  // ローディング中は何も表示しない
+  if (loading) {
+    return (
+      <main className="p-4">
+        <div>読み込み中...</div>
+      </main>
+    )
+  }
+
+  // 未ログインの場合は何も表示しない（リダイレクト処理中）
+  if (!userInfo) {
+    return (
+      <main className="p-4">
+        <div>リダイレクト中...</div>
+      </main>
+    )
+  }
+
+  // ログイン済みの場合のみコンテンツを表示
   return (
     <main className="p-4">
       <h1 className="text-2xl font-bold mb-4">できたよカレンダー</h1>
