@@ -13,7 +13,12 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     if (loading) return // ユーザー情報がまだ読み込まれていない
 
     // /setting ページと /login では何もしない
-    if (pathname === '/setting' || pathname === '/login') return
+    if (
+      pathname === '/setting' ||
+      pathname === '/signup' ||
+      pathname === '/login'
+    )
+      return
 
     // role または familyId が未設定なら /setting へ強制移動
     if (!userInfo?.role || !userInfo?.familyId) {
