@@ -1,7 +1,5 @@
 import './globals.css'
-import Link from 'next/link'
-import { AuthGuard } from '@/components/AuthGuard'
-import { Navigation } from '@/components/Navigation'
+import { ClientLayout } from '@/components/ClientLayout'
 
 export default function RootLayout({
   children,
@@ -11,10 +9,9 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body>
-        <AuthGuard>
-          <Navigation />
-          <main className="p-4">{children}</main>
-        </AuthGuard>
+        <ClientLayout>
+          {children}
+        </ClientLayout>
       </body>
     </html>
   )
