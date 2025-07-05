@@ -6,6 +6,7 @@ import { db } from '@/lib/firebase'
 import { useUserInfo } from '@/hooks/useUserInfo'
 import Calendar from '@/components/Calendar'
 import TaskEditModal, { Task } from '@/components/TaskModalEdit'
+import { RoleGuard } from '@/components/RoleGuard'
 
 type TaskData = {
   [dateStr: string]: { total: number; completed: number }
@@ -97,43 +98,50 @@ export default function CalendarPage() {
   }
 
   return (
-    <main className="p-4">
-      <h1 className="text-2xl font-bold mb-4">カレンダー表示</h1>
-      <Calendar taskData={taskData} onDateClick={handleDateClick} />
-      {selectedDate && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-          <div className="bg-white p-4 rounded shadow-lg w-96">
-            <h2 className="text-lg font-bold mb-2">{selectedDate} のタスク</h2>
-            <ul className="max-h-60 overflow-y-auto">
-              {tasksForSelectedDate.length > 0 ? (
-                tasksForSelectedDate.map((task) => (
-                  <li key={task.id} className="py-1 border-b last:border-none">
-                    ✅ {task.title}
-                    <button
-                      onClick={() => openModal(task)}
-                      className="ml-2 text-blue-500 hover:underline"
+    <RoleGuard allowedRoles={['parent', 'child']}>
+      <main className="p-4">
+        <h1 className="text-2xl font-bold mb-4">カレンダー表示</h1>
+        <Calendar taskData={taskData} onDateClick={handleDateClick} />
+        {selectedDate && (
+          <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+            <div className="bg-white p-4 rounded shadow-lg w-96">
+              <h2 className="text-lg font-bold mb-2">
+                {selectedDate} のタスク
+              </h2>
+              <ul className="max-h-60 overflow-y-auto">
+                {tasksForSelectedDate.length > 0 ? (
+                  tasksForSelectedDate.map((task) => (
+                    <li
+                      key={task.id}
+                      className="py-1 border-b last:border-none"
                     >
-                      編集
-                    </button>
-                  </li>
-                ))
-              ) : (
-                <li className="text-gray-500">タスクはありません</li>
-              )}
-              {selectedTask && (
-                <TaskEditModal task={selectedTask} onClose={closeModal} />
-              )}
-            </ul>
-            <button
-              onClick={() => setSelectedDate(null)}
-              className="mt-4 bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"
-            >
-              閉じる
-            </button>
+                      ✅ {task.title}
+                      <button
+                        onClick={() => openModal(task)}
+                        className="ml-2 text-blue-500 hover:underline"
+                      >
+                        編集
+                      </button>
+                    </li>
+                  ))
+                ) : (
+                  <li className="text-gray-500">タスクはありません</li>
+                )}
+                {selectedTask && (
+                  <TaskEditModal task={selectedTask} onClose={closeModal} />
+                )}
+              </ul>
+              <button
+                onClick={() => setSelectedDate(null)}
+                className="mt-4 bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"
+              >
+                閉じる
+              </button>
+            </div>
           </div>
-        </div>
-      )}
-    </main>
+        )}
+      </main>
+    </RoleGuard>
   )
 }
 

@@ -15,6 +15,7 @@ import {
 import { useAuthRedirect } from '@/hooks/useAuthRedirect'
 import { getTodayString } from '@/lib/dateUtils'
 import Link from 'next/link'
+import { RoleGuard } from '@/components/RoleGuard'
 
 type Task = {
   id: string
@@ -92,35 +93,37 @@ export default function TaskListPage() {
   }, [])
 
   return (
-    <main className="p-4">
-      <h1 className="text-2xl font-bold mb-4">今日のタスク一覧</h1>
-      {tasks.length === 0 ? (
-        <p className="text-gray-500">今日のタスクはありません。</p>
-      ) : (
-        <ul className="list-none space-y-2">
-          {tasks.map((task) => (
-            <li key={task.id} className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                checked={task.isCompleted}
-                onChange={() => toggleCompleted(task)}
-                className="form-checkbox h-5 w-5 text-blue-600"
-              />
-              <span
-                className={`flex-1 ${task.isCompleted ? 'line-through text-gray-500' : ''}`}
-              >
-                {task.title}
-              </span>
-              <Link
-                href={`/tasks/edit/${task.id}`}
-                className="text-blue-500 underline text-sm"
-              >
-                編集する
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
-    </main>
+    <RoleGuard allowedRoles={['parent']}>
+      <main className="p-4">
+        <h1 className="text-2xl font-bold mb-4">今日のタスク一覧</h1>
+        {tasks.length === 0 ? (
+          <p className="text-gray-500">今日のタスクはありません。</p>
+        ) : (
+          <ul className="list-none space-y-2">
+            {tasks.map((task) => (
+              <li key={task.id} className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={task.isCompleted}
+                  onChange={() => toggleCompleted(task)}
+                  className="form-checkbox h-5 w-5 text-blue-600"
+                />
+                <span
+                  className={`flex-1 ${task.isCompleted ? 'line-through text-gray-500' : ''}`}
+                >
+                  {task.title}
+                </span>
+                <Link
+                  href={`/tasks/edit/${task.id}`}
+                  className="text-blue-500 underline text-sm"
+                >
+                  編集する
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </main>
+    </RoleGuard>
   )
 }

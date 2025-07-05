@@ -6,6 +6,7 @@ import { db } from '@/lib/firebase'
 import { doc, getDoc, updateDoc } from 'firebase/firestore'
 import { auth } from '@/lib/firebase'
 import { onAuthStateChanged } from 'firebase/auth'
+import { RoleGuard } from '@/components/RoleGuard'
 
 export default function TaskEditPage() {
   const { id } = useParams()
@@ -69,20 +70,22 @@ export default function TaskEditPage() {
   if (loading) return <p>読み込み中...</p>
 
   return (
-    <main className="p-4">
-      <h1 className="text-2xl font-bold mb-4">タスク編集</h1>
-      <input
-        type="text"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        className="border px-2 py-1 rounded w-full"
-      />
-      <button
-        onClick={handleUpdate}
-        className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-      >
-        保存する
-      </button>
-    </main>
+    <RoleGuard allowedRoles={['parent']}>
+      <main className="p-4">
+        <h1 className="text-2xl font-bold mb-4">タスク編集</h1>
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="border px-2 py-1 rounded w-full"
+        />
+        <button
+          onClick={handleUpdate}
+          className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          保存する
+        </button>
+      </main>
+    </RoleGuard>
   )
 }

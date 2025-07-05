@@ -6,6 +6,7 @@ import { addDoc, collection } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { useUserInfo } from '@/hooks/useUserInfo'
 import { serverTimestamp } from 'firebase/firestore'
+import { RoleGuard } from '@/components/RoleGuard'
 
 export default function TaskTemplateCreatePage() {
   const router = useRouter()
@@ -60,54 +61,58 @@ export default function TaskTemplateCreatePage() {
   }
 
   return (
-    <main className="p-4">
-      <h1 className="text-2xl font-bold mb-4">テンプレート作成</h1>
-      <input
-        type="text"
-        placeholder="テンプレート名"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        className="border px-2 py-1 rounded w-full mb-4"
-      />
+    <RoleGuard allowedRoles={['parent']}>
+      <main className="p-4">
+        <h1 className="text-2xl font-bold mb-4">テンプレート作成</h1>
+        <input
+          type="text"
+          placeholder="テンプレート名"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="border px-2 py-1 rounded w-full mb-4"
+        />
 
-      <div>
-        <label className="block font-semibold mb-1">繰り返し設定</label>
-        <select
-          value={repeatType}
-          onChange={(e) => setRepeatType(e.target.value as any)}
-          className="border px-2 py-1 rounded w-full"
-        >
-          <option value="none">繰り返しなし</option>
-          <option value="everyday">毎日</option>
-          <option value="weekday">平日のみ</option>
-          <option value="custom">曜日を指定</option>
-        </select>
-      </div>
-
-      {repeatType === 'custom' && (
         <div>
-          <label className="block font-semibold mb-1">曜日を選択</label>
-          <div className="flex gap-2 flex-wrap">
-            {['日', '月', '火', '水', '木', '金', '土'].map((label, index) => (
-              <label key={index} className="flex items-center space-x-1">
-                <input
-                  type="checkbox"
-                  checked={customDays.includes(index)}
-                  onChange={() => toggleDay(index)}
-                />
-                <span>{label}</span>
-              </label>
-            ))}
-          </div>
+          <label className="block font-semibold mb-1">繰り返し設定</label>
+          <select
+            value={repeatType}
+            onChange={(e) => setRepeatType(e.target.value as any)}
+            className="border px-2 py-1 rounded w-full"
+          >
+            <option value="none">繰り返しなし</option>
+            <option value="everyday">毎日</option>
+            <option value="weekday">平日のみ</option>
+            <option value="custom">曜日を指定</option>
+          </select>
         </div>
-      )}
-      <button
-        onClick={handleSubmit}
-        disabled={loading}
-        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
-      >
-        {loading ? '登録中...' : '登録する'}
-      </button>
-    </main>
+
+        {repeatType === 'custom' && (
+          <div>
+            <label className="block font-semibold mb-1">曜日を選択</label>
+            <div className="flex gap-2 flex-wrap">
+              {['日', '月', '火', '水', '木', '金', '土'].map(
+                (label, index) => (
+                  <label key={index} className="flex items-center space-x-1">
+                    <input
+                      type="checkbox"
+                      checked={customDays.includes(index)}
+                      onChange={() => toggleDay(index)}
+                    />
+                    <span>{label}</span>
+                  </label>
+                )
+              )}
+            </div>
+          </div>
+        )}
+        <button
+          onClick={handleSubmit}
+          disabled={loading}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+        >
+          {loading ? '登録中...' : '登録する'}
+        </button>
+      </main>
+    </RoleGuard>
   )
 }

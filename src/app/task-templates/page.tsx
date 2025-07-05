@@ -14,6 +14,7 @@ import { db } from '@/lib/firebase'
 import { useUserInfo } from '@/hooks/useUserInfo'
 import Link from 'next/link'
 import { getTodayString } from '@/lib/dateUtils'
+import { RoleGuard } from '@/components/RoleGuard'
 
 type TaskTemplate = {
   id: string
@@ -184,63 +185,65 @@ export default function TaskTemplateListPage() {
   }
 
   return (
-    <main className="p-4">
-      <h1 className="text-2xl font-bold mb-4">テンプレート一覧</h1>
-      <button
-        onClick={handleGenerateTodayTasks}
-        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-      >
-        本日のタスクを生成
-      </button>
-      <Link
-        href="/task-templates/create"
-        className="text-blue-500 underline mb-4 block"
-      >
-        新しいテンプレートを作成
-      </Link>
-      {templates.length === 0 ? (
-        <p>テンプレートがありません。</p>
-      ) : (
-        <ul className="space-y-2">
-          {templates.map((template) => (
-            <li key={template.id} className="p-2 bg-gray-100 rounded shadow">
-              <div>
-                <div className="font-semibold">{template.title}</div>
-                <div className="text-sm text-gray-600">
-                  {repeatTypeLabel(
-                    template.repeatType || 'none',
-                    template.repeatDays
-                  )}
+    <RoleGuard allowedRoles={['parent']}>
+      <main className="p-4">
+        <h1 className="text-2xl font-bold mb-4">テンプレート一覧</h1>
+        <button
+          onClick={handleGenerateTodayTasks}
+          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+        >
+          本日のタスクを生成
+        </button>
+        <Link
+          href="/task-templates/create"
+          className="text-blue-500 underline mb-4 block"
+        >
+          新しいテンプレートを作成
+        </Link>
+        {templates.length === 0 ? (
+          <p>テンプレートがありません。</p>
+        ) : (
+          <ul className="space-y-2">
+            {templates.map((template) => (
+              <li key={template.id} className="p-2 bg-gray-100 rounded shadow">
+                <div>
+                  <div className="font-semibold">{template.title}</div>
+                  <div className="text-sm text-gray-600">
+                    {repeatTypeLabel(
+                      template.repeatType || 'none',
+                      template.repeatDays
+                    )}
+                  </div>
                 </div>
-              </div>
-              <button
-                onClick={() => handleAddTask(template)}
-                className="ml-2 px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
-              >
-                今日のタスクに追加
-              </button>
-              <Link
-                href={`/task-templates/edit/${template.id}`}
-                className="text-blue-500 underline hover:text-blue-700"
-              >
-                編集
-              </Link>
-              <button
-                onClick={() => handleDelete(template.id)}
-                className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
-              >
-                削除
-              </button>
-              <div className="text-sm text-gray-500">
-                作成者: {template.createdBy} | 作成日:{' '}
-                {new Date(
-                  template.createdAt.seconds * 1000
-                ).toLocaleDateString()}
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </main>
+                <button
+                  onClick={() => handleAddTask(template)}
+                  className="ml-2 px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+                >
+                  今日のタスクに追加
+                </button>
+                <Link
+                  href={`/task-templates/edit/${template.id}`}
+                  className="text-blue-500 underline hover:text-blue-700"
+                >
+                  編集
+                </Link>
+                <button
+                  onClick={() => handleDelete(template.id)}
+                  className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+                >
+                  削除
+                </button>
+                <div className="text-sm text-gray-500">
+                  作成者: {template.createdBy} | 作成日:{' '}
+                  {new Date(
+                    template.createdAt.seconds * 1000
+                  ).toLocaleDateString()}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </main>
+    </RoleGuard>
   )
 }

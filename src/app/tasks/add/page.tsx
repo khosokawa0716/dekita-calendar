@@ -6,6 +6,7 @@ import { db } from '@/lib/firebase'
 import { getTodayString } from '@/lib/dateUtils'
 import { useAuthRedirect } from '@/hooks/useAuthRedirect'
 import { useUserInfo } from '@/hooks/useUserInfo'
+import { RoleGuard } from '@/components/RoleGuard'
 
 export default function TaskAddPage() {
   useAuthRedirect()
@@ -38,21 +39,23 @@ export default function TaskAddPage() {
   }
 
   return (
-    <main className="p-4">
-      <h1 className="text-2xl font-bold mb-4">タスクを登録する</h1>
-      <input
-        type="text"
-        value={newTitle}
-        onChange={(e) => setNewTitle(e.target.value)}
-        placeholder="タスク名を入力"
-        className="border px-2 py-1 rounded w-full"
-      />
-      <button
-        onClick={addTask}
-        className="mt-2 bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"
-      >
-        追加する
-      </button>
-    </main>
+    <RoleGuard allowedRoles={['parent']}>
+      <main className="p-4">
+        <h1 className="text-2xl font-bold mb-4">タスクを登録する</h1>
+        <input
+          type="text"
+          value={newTitle}
+          onChange={(e) => setNewTitle(e.target.value)}
+          placeholder="タスク名を入力"
+          className="border px-2 py-1 rounded w-full"
+        />
+        <button
+          onClick={addTask}
+          className="mt-2 bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"
+        >
+          追加する
+        </button>
+      </main>
+    </RoleGuard>
   )
 }

@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation'
 import { doc, getDoc, updateDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { useUserInfo } from '@/hooks/useUserInfo'
+import { RoleGuard } from '@/components/RoleGuard'
 
 const nextPage = '/task-templates'
 
@@ -92,49 +93,51 @@ export default function TaskTemplateEditPage() {
   if (loading || !templateLoaded) return <p className="p-4">読み込み中...</p>
 
   return (
-    <main className="p-4">
-      <h1 className="text-2xl font-bold mb-4">テンプレート編集</h1>
-      <input
-        type="text"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        className="border px-2 py-1 rounded w-full mb-4"
-        placeholder="テンプレート名"
-      />
-      <div>
-        <label className="font-semibold block mb-1">繰り返し設定</label>
-        <select
-          value={repeatType}
-          onChange={(e) => setRepeatType(e.target.value as any)}
-          className="border px-2 py-1 rounded"
-        >
-          <option value="none">繰り返しなし</option>
-          <option value="everyday">毎日</option>
-          <option value="weekday">平日</option>
-          <option value="custom">曜日指定</option>
-        </select>
-      </div>
-
-      {repeatType === 'custom' && (
-        <div className="flex gap-2 flex-wrap">
-          {['日', '月', '火', '水', '木', '金', '土'].map((label, i) => (
-            <label key={i} className="flex items-center gap-1">
-              <input
-                type="checkbox"
-                checked={repeatDays.includes(i)}
-                onChange={() => toggleDay(i)}
-              />
-              {label}
-            </label>
-          ))}
+    <RoleGuard allowedRoles={['parent']}>
+      <main className="p-4">
+        <h1 className="text-2xl font-bold mb-4">テンプレート編集</h1>
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="border px-2 py-1 rounded w-full mb-4"
+          placeholder="テンプレート名"
+        />
+        <div>
+          <label className="font-semibold block mb-1">繰り返し設定</label>
+          <select
+            value={repeatType}
+            onChange={(e) => setRepeatType(e.target.value as any)}
+            className="border px-2 py-1 rounded"
+          >
+            <option value="none">繰り返しなし</option>
+            <option value="everyday">毎日</option>
+            <option value="weekday">平日</option>
+            <option value="custom">曜日指定</option>
+          </select>
         </div>
-      )}
-      <button
-        onClick={handleUpdate}
-        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-      >
-        更新する
-      </button>
-    </main>
+
+        {repeatType === 'custom' && (
+          <div className="flex gap-2 flex-wrap">
+            {['日', '月', '火', '水', '木', '金', '土'].map((label, i) => (
+              <label key={i} className="flex items-center gap-1">
+                <input
+                  type="checkbox"
+                  checked={repeatDays.includes(i)}
+                  onChange={() => toggleDay(i)}
+                />
+                {label}
+              </label>
+            ))}
+          </div>
+        )}
+        <button
+          onClick={handleUpdate}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          更新する
+        </button>
+      </main>
+    </RoleGuard>
   )
 }
