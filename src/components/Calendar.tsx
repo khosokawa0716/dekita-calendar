@@ -10,7 +10,6 @@ type Props = {
   taskData?: {
     [dateStr: string]: { total: number; completed: number }
   }
-  onDateClick?: (dateStr: string) => void
 }
 
 /**
@@ -124,7 +123,7 @@ const getDaysInCalendar = (currentDate: Date): Date[] => {
   return Array.from({ length: totalDays }, (_, i) => addDays(startDate, i))
 }
 
-export default function Calendar({ taskData = {}, onDateClick }: Props) {
+export default function Calendar({ taskData = {} }: Props) {
   // 現在表示している月の日付を管理するstate
   const [currentDate, setCurrentDate] = useState(new Date())
 
@@ -169,11 +168,6 @@ export default function Calendar({ taskData = {}, onDateClick }: Props) {
         className={`border h-20 p-1 text-xs ${
           isCurrentMonth ? 'bg-white' : 'bg-gray-100 text-gray-400' // 現在月とそれ以外で色を変える
         }`}
-        onClick={() => {
-          if (hasTask && onDateClick) {
-            onDateClick(dateKey)
-          }
-        }}
       >
         <div className="font-bold">{dayNumber}</div>
         {/* この日付にタスクデータがある場合は完了状況を表示 */}

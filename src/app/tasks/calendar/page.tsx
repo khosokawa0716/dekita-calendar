@@ -1,26 +1,108 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { collection, getDocs, query, where } from 'firebase/firestore'
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  doc,
+  updateDoc,
+} from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { useUserInfo } from '@/hooks/useUserInfo'
 import Calendar from '@/components/Calendar'
-import TaskEditModal, { Task } from '@/components/TaskModalEdit'
 import { RoleGuard } from '@/components/RoleGuard'
+import { getTodayString } from '@/lib/dateUtils'
+import Toast from '@/components/Toast'
 
 type TaskData = {
   [dateStr: string]: { total: number; completed: number }
+}
+
+export type Task = {
+  id: string
+  title: string
+  isCompleted: boolean
+  comment?: string
+}
+
+// 個別のタスクアイテムコンポーネント
+function TaskItem({
+  task,
+  onUpdate,
+  canEdit,
+  loading,
+}: {
+  task: Task
+  onUpdate: (taskId: string, isCompleted: boolean, comment: string) => void
+  canEdit: boolean
+  loading: boolean
+}) {
+  const [isCompleted, setIsCompleted] = useState(task.isCompleted)
+  const [comment, setComment] = useState(task.comment || '')
+
+  const handleSave = () => {
+    onUpdate(task.id, isCompleted, comment)
+  }
+
+  return (
+    <div className="bg-white p-4 rounded-lg border shadow-sm">
+      <div className="flex items-start gap-3">
+        <label className="flex items-center gap-2 min-w-0 flex-1">
+          <input
+            type="checkbox"
+            checked={isCompleted}
+            onChange={(e) => setIsCompleted(e.target.checked)}
+            disabled={!canEdit || loading}
+            className="w-4 h-4"
+          />
+          <span
+            className={`font-medium ${isCompleted ? 'line-through text-gray-500' : 'text-gray-900'}`}
+          >
+            {task.title}
+          </span>
+        </label>
+        {canEdit && (
+          <button
+            onClick={handleSave}
+            disabled={loading}
+            className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 disabled:opacity-50"
+          >
+            {loading ? '保存中...' : '保存'}
+          </button>
+        )}
+      </div>
+
+      {canEdit && (
+        <div className="mt-3">
+          <textarea
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            placeholder="コメントを入力（任意）"
+            disabled={loading}
+            className="w-full border rounded p-2 text-sm resize-none h-20"
+          />
+        </div>
+      )}
+
+      {!canEdit && task.comment && (
+        <div className="mt-2 p-2 bg-gray-50 rounded text-sm text-gray-600">
+          コメント: {task.comment}
+        </div>
+      )}
+    </div>
+  )
 }
 
 export default function CalendarPage() {
   const { userInfo } = useUserInfo()
   const [taskData, setTaskData] = useState<TaskData>({})
   const [currentDate] = useState(new Date()) // 現在の月を保持
-
-  const [selectedDate, setSelectedDate] = useState<string | null>(null)
-  const [tasksForSelectedDate, setTasksForSelectedDate] = useState<any[]>([])
-
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null)
+  const [todayTasks, setTodayTasks] = useState<Task[]>([])
+  const [loading, setLoading] = useState(false)
+  const [toastMessage, setToastMessage] = useState<string | null>(null)
+  const [toastType, setToastType] = useState<'success' | 'error'>('success')
 
   useEffect(() => {
     if (!userInfo) return
@@ -71,75 +153,107 @@ export default function CalendarPage() {
     fetchTasks()
   }, [userInfo, currentDate])
 
-  // 日付がクリックされたときにタスクを取得してモーダル表示
-  const handleDateClick = async (dateStr: string) => {
+  // 本日のタスクを取得
+  useEffect(() => {
     if (!userInfo) return
 
-    const tasksRef = collection(db, 'tasks')
-    const q = query(
-      tasksRef,
-      where('date', '==', dateStr),
-      where('userId', '==', userInfo.id),
-      where('familyId', '==', userInfo.familyId)
-    )
-    const snapshot = await getDocs(q)
-    const tasks = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+    const fetchTodayTasks = async () => {
+      const today = getTodayString()
+      const tasksRef = collection(db, 'tasks')
+      const q = query(
+        tasksRef,
+        where('date', '==', today),
+        where('userId', '==', userInfo.id),
+        where('familyId', '==', userInfo.familyId)
+      )
+      const snapshot = await getDocs(q)
+      const tasks = snapshot.docs.map(
+        (doc) =>
+          ({
+            id: doc.id,
+            ...doc.data(),
+          }) as Task
+      )
 
-    setTasksForSelectedDate(tasks)
-    setSelectedDate(dateStr)
-  }
+      setTodayTasks(tasks)
+    }
 
-  const openModal = (task: Task) => {
-    setSelectedTask(task)
-  }
+    fetchTodayTasks()
+  }, [userInfo])
 
-  const closeModal = () => {
-    setSelectedTask(null)
+  // タスクの完了状態を更新
+  const updateTaskStatus = async (
+    taskId: string,
+    isCompleted: boolean,
+    comment: string
+  ) => {
+    if (!userInfo || userInfo.role !== 'child') {
+      setToastType('error')
+      setToastMessage('タスクの編集権限がありません')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const taskRef = doc(db, 'tasks', taskId)
+      await updateDoc(taskRef, {
+        isCompleted,
+        comment,
+      })
+
+      // ローカルstateを更新
+      setTodayTasks((prev) =>
+        prev.map((task) =>
+          task.id === taskId ? { ...task, isCompleted, comment } : task
+        )
+      )
+
+      setToastType('success')
+      setToastMessage('タスクを保存しました')
+    } catch (error) {
+      console.error('保存エラー:', error)
+      setToastType('error')
+      setToastMessage('タスクの保存に失敗しました')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
     <RoleGuard allowedRoles={['parent', 'child']}>
+      {toastMessage && (
+        <Toast
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setToastMessage(null)}
+        />
+      )}
       <main className="p-4">
         <h1 className="text-2xl font-bold mb-4">カレンダー表示</h1>
-        <Calendar taskData={taskData} onDateClick={handleDateClick} />
-        {selectedDate && (
-          <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-            <div className="bg-white p-4 rounded shadow-lg w-96">
-              <h2 className="text-lg font-bold mb-2">
-                {selectedDate} のタスク
-              </h2>
-              <ul className="max-h-60 overflow-y-auto">
-                {tasksForSelectedDate.length > 0 ? (
-                  tasksForSelectedDate.map((task) => (
-                    <li
-                      key={task.id}
-                      className="py-1 border-b last:border-none"
-                    >
-                      ✅ {task.title}
-                      <button
-                        onClick={() => openModal(task)}
-                        className="ml-2 text-blue-500 hover:underline"
-                      >
-                        編集
-                      </button>
-                    </li>
-                  ))
-                ) : (
-                  <li className="text-gray-500">タスクはありません</li>
-                )}
-                {selectedTask && (
-                  <TaskEditModal task={selectedTask} onClose={closeModal} />
-                )}
-              </ul>
-              <button
-                onClick={() => setSelectedDate(null)}
-                className="mt-4 bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"
-              >
-                閉じる
-              </button>
+
+        {/* 本日のタスクセクション */}
+        <div className="mb-6 p-4 bg-blue-50 rounded-lg border">
+          <h2 className="text-xl font-bold mb-4 text-blue-800">
+            今日のタスク ({getTodayString()})
+          </h2>
+          {todayTasks.length > 0 ? (
+            <div className="space-y-3">
+              {todayTasks.map((task) => (
+                <TaskItem
+                  key={task.id}
+                  task={task}
+                  onUpdate={updateTaskStatus}
+                  canEdit={userInfo?.role === 'child'}
+                  loading={loading}
+                />
+              ))}
             </div>
-          </div>
-        )}
+          ) : (
+            <p className="text-gray-600">今日のタスクはありません</p>
+          )}
+        </div>
+
+        <Calendar taskData={taskData} />
       </main>
     </RoleGuard>
   )
