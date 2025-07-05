@@ -30,7 +30,7 @@ export function Navigation() {
               <Link href="/task-templates">テンプレート</Link>
             </>
           )}
-          
+
           {/* 親子共通で表示 */}
           <Link href="/tasks/calendar">カレンダー</Link>
           <Link href="/setting">設定</Link>

@@ -16,15 +16,12 @@ export default function SettingsPage() {
   console.log('userInfo:', userInfo)
   console.log('userInfo?.role:', userInfo?.role)
   const [displayName, setDisplayName] = useState(userInfo?.displayName ?? '')
-  const [role, setRole] = useState<'parent' | 'child'>(
-    userInfo?.role ?? 'parent'
-  )
   const [familyId, setFamilyId] = useState(userInfo?.familyId ?? '')
 
   const handleSubmit = async () => {
     if (!userInfo) return
     const userRef = doc(db, 'users', userInfo.id)
-    await updateDoc(userRef, { displayName, role, familyId })
+    await updateDoc(userRef, { displayName, familyId })
     alert('設定を保存しました')
     // router.refresh() など必要に応じて
   }
@@ -32,7 +29,6 @@ export default function SettingsPage() {
   useEffect(() => {
     if (userInfo) {
       setDisplayName(userInfo.displayName)
-      setRole(userInfo.role)
       setFamilyId(userInfo.familyId)
     }
   }, [userInfo])
@@ -85,25 +81,10 @@ export default function SettingsPage() {
         </label>
 
         <div className="mb-2">
-          ロール:
-          <label className="ml-2">
-            <input
-              type="radio"
-              value="parent"
-              checked={role === 'parent'}
-              onChange={() => setRole('parent')}
-            />
-            親
-          </label>
-          <label className="ml-4">
-            <input
-              type="radio"
-              value="child"
-              checked={role === 'child'}
-              onChange={() => setRole('child')}
-            />
-            子
-          </label>
+          ユーザータイプ:{' '}
+          <span className="font-medium">
+            {userInfo?.role === 'parent' ? '親' : '子'}
+          </span>
         </div>
 
         <label className="block mb-4">
