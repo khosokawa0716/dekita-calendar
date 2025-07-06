@@ -1,6 +1,5 @@
 'use client'
 
-import LogoutButton from '@/components/LogoutButton'
 import Link from 'next/link'
 import { useUserInfo } from '@/hooks/useUserInfo'
 import { useRouter } from 'next/navigation'
@@ -75,10 +74,6 @@ export default function Home() {
             🗒️ テンプレート一覧へ
           </Link>
         </nav>
-
-        <div className="mt-4">
-          <LogoutButton />
-        </div>
       </main>
     </RoleGuard>
   )

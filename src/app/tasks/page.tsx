@@ -35,16 +35,16 @@ export default function TaskListPage() {
     try {
       const currentStatus = task.childrenStatus[childId]
       const newCompleted = !currentStatus.isCompleted
-      
+
       const updatedChildrenStatus = {
         ...task.childrenStatus,
         [childId]: {
           ...currentStatus,
           isCompleted: newCompleted,
-          completedAt: newCompleted ? new Date() : undefined
-        }
+          completedAt: newCompleted ? new Date() : undefined,
+        },
       }
-      
+
       await taskAPI.update(task.id, { childrenStatus: updatedChildrenStatus })
 
       const today = getTodayString()

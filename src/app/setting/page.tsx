@@ -8,6 +8,7 @@ import {
   deleteUser,
 } from 'firebase/auth'
 import { useState, useEffect } from 'react'
+import LogoutButton from '@/components/LogoutButton'
 import { RoleGuard } from '@/components/RoleGuard'
 import { userAPI } from '@/lib/api'
 
@@ -100,19 +101,23 @@ export default function SettingsPage() {
           />
         </label>
 
-        <button
-          onClick={handleSubmit}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          保存
-        </button>
-
-        <button
-          onClick={handleDeleteAccount}
-          className="mt-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-        >
-          アカウントを削除する
-        </button>
+        <div className="flex flex-col sm:flex-row gap-2 mt-6">
+          <button
+            onClick={handleSubmit}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full sm:w-auto"
+          >
+            保存
+          </button>
+          <div className="w-full sm:w-auto">
+            <LogoutButton />
+          </div>
+          <button
+            onClick={handleDeleteAccount}
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-full sm:w-auto"
+          >
+            アカウントを削除する
+          </button>
+        </div>
       </main>
     </RoleGuard>
   )

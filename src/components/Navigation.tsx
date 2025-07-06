@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { useUserInfo } from '@/hooks/useUserInfo'
-import LogoutButton from '@/components/LogoutButton'
 
 export function Navigation() {
   const { userInfo, loading } = useUserInfo()
@@ -34,7 +33,6 @@ export function Navigation() {
           {/* 親子共通で表示 */}
           <Link href="/tasks/calendar">カレンダー</Link>
           <Link href="/setting">設定</Link>
-          <LogoutButton />
         </>
       )}
 
