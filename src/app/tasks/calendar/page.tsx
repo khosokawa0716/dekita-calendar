@@ -15,17 +15,19 @@ import Calendar from '@/components/Calendar'
 import { RoleGuard } from '@/components/RoleGuard'
 import { getTodayString } from '@/lib/dateUtils'
 import Toast from '@/components/Toast'
+import { Task, ChildStatus } from '@/types/task'
 
 type TaskData = {
   [dateStr: string]: { total: number; completed: number }
 }
 
-export type Task = {
-  id: string
-  title: string
-  isCompleted: boolean
-  comment?: string
-}
+// Task型をインポートするため、ローカル定義を削除
+// export type Task = {
+//   id: string
+//   title: string
+//   isCompleted: boolean
+//   comment?: string
+// }
 
 // 個別のタスクアイテムコンポーネント
 function TaskItem({
@@ -33,14 +35,29 @@ function TaskItem({
   onUpdate,
   canEdit,
   loading,
+  currentUserId,
 }: {
   task: Task
   onUpdate: (taskId: string, isCompleted: boolean, comment: string) => void
   canEdit: boolean
   loading: boolean
+  currentUserId?: string
 }) {
-  const [isCompleted, setIsCompleted] = useState(task.isCompleted)
-  const [comment, setComment] = useState(task.comment || '')
+  // 現在のユーザーの状態を取得（新構造 or 旧構造から）
+  const getUserStatus = () => {
+    if (currentUserId && task.childrenStatus && task.childrenStatus[currentUserId]) {
+      return task.childrenStatus[currentUserId]
+    }
+    // 旧構造との互換性
+    return {
+      isCompleted: task.isCompleted ?? false,
+      comment: task.comment || task.childComment || ''
+    }
+  }
+
+  const userStatus = getUserStatus()
+  const [isCompleted, setIsCompleted] = useState(userStatus.isCompleted)
+  const [comment, setComment] = useState(userStatus.comment)
 
   const handleSave = () => {
     onUpdate(task.id, isCompleted, comment)
@@ -86,9 +103,16 @@ function TaskItem({
         </div>
       )}
 
-      {!canEdit && task.comment && (
+      {!canEdit && userStatus.comment && (
         <div className="mt-2 p-2 bg-gray-50 rounded text-sm text-gray-600">
-          コメント: {task.comment}
+          コメント: {userStatus.comment}
+        </div>
+      )}
+
+      {/* 複数子どもの完了状況表示（親向け） */}
+      {!canEdit && task.childrenStatus && Object.keys(task.childrenStatus).length > 0 && (
+        <div className="mt-2 text-sm text-gray-600">
+          完了状況: {Object.values(task.childrenStatus).filter(status => status.isCompleted).length} / {Object.keys(task.childrenStatus).length} 人
         </div>
       )}
     </div>
@@ -142,7 +166,18 @@ export default function CalendarPage() {
         }
 
         data[date].total += 1
-        if (task.isCompleted) {
+        
+        // 新構造での完了判定: childrenStatus内に完了した子どもがいるかチェック
+        let isCompleted = false
+        if (task.childrenStatus && Object.keys(task.childrenStatus).length > 0) {
+          // 少なくとも一人の子どもが完了していれば「完了」とみなす
+          isCompleted = Object.values(task.childrenStatus).some((status: any) => status.isCompleted)
+        } else {
+          // 旧構造との互換性
+          isCompleted = task.isCompleted
+        }
+        
+        if (isCompleted) {
           data[date].completed += 1
         }
       })
@@ -163,17 +198,28 @@ export default function CalendarPage() {
       const q = query(
         tasksRef,
         where('date', '==', today),
-        where('userId', '==', userInfo.id),
         where('familyId', '==', userInfo.familyId)
       )
       const snapshot = await getDocs(q)
-      const tasks = snapshot.docs.map(
+      let tasks = snapshot.docs.map(
         (doc) =>
           ({
             id: doc.id,
             ...doc.data(),
           }) as Task
       )
+
+      // 子どもユーザーの場合は、自分に関連するタスクのみフィルタリング
+      if (userInfo.role === 'child') {
+        tasks = tasks.filter(task => {
+          // 新構造: childrenStatusに自分のIDがある
+          if (task.childrenStatus && task.childrenStatus[userInfo.id]) {
+            return true
+          }
+          // 旧構造: userIdが自分のID
+          return task.userId === userInfo.id
+        })
+      }
 
       setTodayTasks(tasks)
     }
@@ -196,16 +242,38 @@ export default function CalendarPage() {
     setLoading(true)
     try {
       const taskRef = doc(db, 'tasks', taskId)
-      await updateDoc(taskRef, {
+      
+      // 新構造での更新: childrenStatusに現在のユーザーの状態を保存
+      const updateData = {
+        [`childrenStatus.${userInfo.id}`]: {
+          isCompleted,
+          comment,
+          completedAt: isCompleted ? new Date() : null
+        },
+        // 下位互換性のため、旧フィールドも更新
         isCompleted,
         comment,
-      })
+      }
+      
+      await updateDoc(taskRef, updateData)
 
       // ローカルstateを更新
       setTodayTasks((prev) =>
-        prev.map((task) =>
-          task.id === taskId ? { ...task, isCompleted, comment } : task
-        )
+        prev.map((task) => {
+          if (task.id === taskId) {
+            const newChildrenStatus = {
+              ...task.childrenStatus,
+              [userInfo.id]: { isCompleted, comment, completedAt: isCompleted ? new Date() : undefined }
+            }
+            return { 
+              ...task, 
+              isCompleted, 
+              comment,
+              childrenStatus: newChildrenStatus
+            }
+          }
+          return task
+        })
       )
 
       setToastType('success')
@@ -245,6 +313,7 @@ export default function CalendarPage() {
                   onUpdate={updateTaskStatus}
                   canEdit={userInfo?.role === 'child'}
                   loading={loading}
+                  currentUserId={userInfo?.id}
                 />
               ))}
             </div>
