@@ -40,6 +40,7 @@ const user = await userAPI.getById(userId)
 新しいタスクを作成します。
 
 **パラメータ:**
+
 ```typescript
 interface CreateTaskInput {
   title: string
@@ -53,15 +54,16 @@ interface CreateTaskInput {
 **戻り値:** `Promise<string>` - 作成されたタスクのID
 
 **例:**
+
 ```typescript
 const taskData = {
-  title: "宿題をする",
-  date: "2025-01-06",
-  createdBy: "parent_user_id",
-  familyId: "family_123",
+  title: '宿題をする',
+  date: '2025-01-06',
+  createdBy: 'parent_user_id',
+  familyId: 'family_123',
   childrenStatus: {
-    "child_1": { isCompleted: false, comment: "", completedAt: null }
-  }
+    child_1: { isCompleted: false, comment: '', completedAt: null },
+  },
 }
 
 const taskId = await taskAPI.create(taskData)
@@ -72,14 +74,16 @@ const taskId = await taskAPI.create(taskData)
 指定した家族IDと日付のタスクを取得します。
 
 **パラメータ:**
+
 - `familyId: string` - 家族ID
 - `date: string` - 日付 (YYYY-MM-DD形式)
 
 **戻り値:** `Promise<Task[]>`
 
 **例:**
+
 ```typescript
-const tasks = await taskAPI.getByFamilyIdAndDate("family_123", "2025-01-06")
+const tasks = await taskAPI.getByFamilyIdAndDate('family_123', '2025-01-06')
 ```
 
 ### `taskAPI.getByFamilyIdAndDateRange(familyId, startDate, endDate)`
@@ -87,6 +91,7 @@ const tasks = await taskAPI.getByFamilyIdAndDate("family_123", "2025-01-06")
 指定した家族IDと日付範囲のタスクを取得します（カレンダー用）。
 
 **パラメータ:**
+
 - `familyId: string` - 家族ID
 - `startDate: string` - 開始日 (YYYY-MM-DD形式)
 - `endDate: string` - 終了日 (YYYY-MM-DD形式)
@@ -94,11 +99,12 @@ const tasks = await taskAPI.getByFamilyIdAndDate("family_123", "2025-01-06")
 **戻り値:** `Promise<Task[]>`
 
 **例:**
+
 ```typescript
 const tasks = await taskAPI.getByFamilyIdAndDateRange(
-  "family_123", 
-  "2025-01-01", 
-  "2025-01-31"
+  'family_123',
+  '2025-01-01',
+  '2025-01-31'
 )
 ```
 
@@ -107,6 +113,7 @@ const tasks = await taskAPI.getByFamilyIdAndDateRange(
 IDでタスクを取得します。
 
 **パラメータ:**
+
 - `id: string` - タスクID
 
 **戻り値:** `Promise<Task | null>`
@@ -116,16 +123,22 @@ IDでタスクを取得します。
 タスクを更新します。
 
 **パラメータ:**
+
 - `id: string` - タスクID
 - `updates: UpdateTaskInput` - 更新データ
 
 **例:**
+
 ```typescript
-await taskAPI.update("task_123", {
-  title: "新しいタイトル",
+await taskAPI.update('task_123', {
+  title: '新しいタイトル',
   childrenStatus: {
-    "child_1": { isCompleted: true, comment: "完了しました！", completedAt: new Date() }
-  }
+    child_1: {
+      isCompleted: true,
+      comment: '完了しました！',
+      completedAt: new Date(),
+    },
+  },
 })
 ```
 
@@ -134,6 +147,7 @@ await taskAPI.update("task_123", {
 タスクを削除します。
 
 **パラメータ:**
+
 - `id: string` - タスクID
 
 ---
@@ -147,6 +161,7 @@ await taskAPI.update("task_123", {
 新しいタスクテンプレートを作成します。
 
 **パラメータ:**
+
 ```typescript
 interface CreateTaskTemplateInput {
   title: string
@@ -160,12 +175,13 @@ interface CreateTaskTemplateInput {
 **戻り値:** `Promise<string>` - 作成されたテンプレートのID
 
 **例:**
+
 ```typescript
 const templateData = {
-  title: "朝の準備",
-  createdBy: "parent_user_id",
-  familyId: "family_123",
-  repeatType: "weekday"
+  title: '朝の準備',
+  createdBy: 'parent_user_id',
+  familyId: 'family_123',
+  repeatType: 'weekday',
 }
 
 const templateId = await taskTemplateAPI.create(templateData)
@@ -202,16 +218,18 @@ IDでタスクテンプレートを取得します。
 新しいユーザーを作成します。
 
 **パラメータ:**
+
 - `uid: string` - Firebase AuthのUID
 - `userData: Omit<User, 'id'>` - ユーザーデータ
 
 **例:**
+
 ```typescript
-await userAPI.create("firebase_uid", {
-  email: "user@example.com",
-  displayName: "太郎",
-  role: "child",
-  familyId: "family_123"
+await userAPI.create('firebase_uid', {
+  email: 'user@example.com',
+  displayName: '太郎',
+  role: 'child',
+  familyId: 'family_123',
 })
 ```
 
@@ -258,6 +276,7 @@ IDでユーザーを取得します。
 ## 🔧 型定義
 
 ### Task型
+
 ```typescript
 interface Task {
   id: string
@@ -270,6 +289,7 @@ interface Task {
 ```
 
 ### ChildStatus型
+
 ```typescript
 interface ChildStatus {
   isCompleted: boolean
@@ -279,6 +299,7 @@ interface ChildStatus {
 ```
 
 ### TaskTemplate型
+
 ```typescript
 interface TaskTemplate {
   id: string
@@ -292,6 +313,7 @@ interface TaskTemplate {
 ```
 
 ### User型
+
 ```typescript
 interface User {
   id: string
@@ -310,7 +332,7 @@ interface User {
 
 ```typescript
 try {
-  const task = await taskAPI.getById("invalid_id")
+  const task = await taskAPI.getById('invalid_id')
 } catch (error) {
   console.error(error.message) // "タスクの取得に失敗しました"
 }

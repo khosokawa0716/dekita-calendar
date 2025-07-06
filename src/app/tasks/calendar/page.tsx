@@ -220,7 +220,7 @@ export default function CalendarPage() {
     setLoading(true)
     try {
       // 現在のタスクを取得
-      const currentTask = todayTasks.find(task => task.id === taskId)
+      const currentTask = todayTasks.find((task) => task.id === taskId)
       if (!currentTask) return
 
       // 新構造での更新: childrenStatusを更新

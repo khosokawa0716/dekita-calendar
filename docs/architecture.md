@@ -7,17 +7,20 @@
 ## 📋 技術スタック
 
 ### フロントエンド
+
 - **Framework**: Next.js 14 (App Router)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
 - **State Management**: React Hooks (useState, useEffect)
 
 ### バックエンド・インフラ
+
 - **Database**: Firebase Firestore
 - **Authentication**: Firebase Auth
 - **Hosting**: Vercel (推奨)
 
 ### 開発ツール
+
 - **Linting**: ESLint
 - **Formatting**: Prettier
 - **Version Control**: Git
@@ -25,6 +28,7 @@
 ## 🎯 設計思想
 
 ### 1. API層による抽象化
+
 Firebase操作を直接行わず、API層を経由することで以下を実現：
 
 - **保守性**: データアクセスロジックの集約
@@ -42,11 +46,13 @@ const tasks = await taskAPI.getByFamilyId(familyId)
 ```
 
 ### 2. コンポーネント分離
+
 - **Page Components**: ページ単位のコンポーネント
 - **Shared Components**: 再利用可能なUIコンポーネント
 - **Custom Hooks**: ビジネスロジックの抽象化
 
 ### 3. 型安全性の重視
+
 - 全てのデータ構造をTypeScriptで定義
 - API層での型チェック
 - コンパイル時エラーの最大化
@@ -97,16 +103,19 @@ src/
 ## 🔄 データフロー
 
 ### 1. 認証フロー
+
 ```
 User Login → Firebase Auth → useUserInfo Hook → User State
 ```
 
 ### 2. データ取得フロー
+
 ```
 Component → API Layer → Firebase Firestore → Data Transform → Component State
 ```
 
 ### 3. データ更新フロー
+
 ```
 User Action → API Layer → Firebase Firestore → Local State Update → UI Re-render
 ```
@@ -114,25 +123,29 @@ User Action → API Layer → Firebase Firestore → Local State Update → UI R
 ## 🛡️ セキュリティ設計
 
 ### 1. 認証・認可
+
 - **Firebase Auth**: メール・パスワード認証
 - **Role-based Access Control**: 親・子の権限管理
 - **Route Protection**: 認証が必要なページの保護
 
 ### 2. データアクセス制御
+
 - **Family-based Isolation**: 家族単位でのデータ分離
 - **Role-based Operations**: 操作権限の制限
 - **Input Validation**: API層でのデータ検証
 
 ### 3. Firestore Security Rules
+
 ```javascript
 // 家族データの分離
-allow read, write: if request.auth != null 
+allow read, write: if request.auth != null
   && resource.data.familyId == getUserFamilyId(request.auth.uid);
 ```
 
 ## 📊 データモデル設計
 
 ### コレクション構成
+
 ```
 firestore/
 ├── users/           # ユーザー情報
@@ -142,6 +155,7 @@ firestore/
 ```
 
 ### リレーション設計
+
 - **Users ← FamilyId → Tasks**: 家族によるデータ分離
 - **Users ← CreatedBy → TaskTemplates**: 作成者による管理
 - **Tasks → ChildrenStatus**: 複数子どもの状態管理
@@ -151,32 +165,38 @@ firestore/
 ## 🚀 パフォーマンス考慮事項
 
 ### 1. クエリ最適化
+
 - **インデックス**: 複合クエリに対するインデックス設定
 - **Pagination**: 大量データの分割取得
 - **Caching**: 適切なデータキャッシュ
 
 ### 2. リアルタイム更新
+
 - **Firestore Realtime Listeners**: 必要最小限の使用
 - **Local State Management**: クライアント側キャッシュ
 
 ### 3. バンドルサイズ最適化
+
 - **Tree Shaking**: 未使用コードの除去
 - **Dynamic Imports**: 必要時のみコンポーネント読み込み
 
 ## 🔧 開発・運用考慮事項
 
 ### 1. 環境分離
+
 ```
 Development → Firebase Project (dev)
 Production  → Firebase Project (prod)
 ```
 
 ### 2. ログ・監視
+
 - **Console Logging**: 開発時のデバッグ情報
 - **Error Tracking**: 本番環境でのエラー監視
 - **Performance Monitoring**: パフォーマンス計測
 
 ### 3. CI/CD
+
 ```
 Git Push → GitHub Actions → Build & Test → Deploy to Vercel
 ```
@@ -184,16 +204,19 @@ Git Push → GitHub Actions → Build & Test → Deploy to Vercel
 ## 🔄 今後の拡張性
 
 ### 1. 機能拡張
+
 - **通知機能**: プッシュ通知・メール通知
 - **レポート機能**: 達成率レポート
 - **ゲーミフィケーション**: ポイント・バッジシステム
 
 ### 2. 技術的拡張
+
 - **PWA化**: オフライン対応
 - **マルチテナント**: 組織単位の管理
 - **API外部公開**: REST API/GraphQL
 
 ### 3. 運用面拡張
+
 - **多言語対応**: i18n導入
 - **アクセシビリティ**: WCAG準拠
 - **モバイルアプリ**: React Native展開

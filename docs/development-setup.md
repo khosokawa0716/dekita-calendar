@@ -25,22 +25,26 @@ npm install
 ### 3. Firebase プロジェクトの設定
 
 #### 3.1 Firebase コンソールでプロジェクト作成
+
 1. [Firebase Console](https://console.firebase.google.com/) にアクセス
 2. 「プロジェクトを追加」をクリック
 3. プロジェクト名を入力（例: `dekita-calendar-dev`）
 4. Google Analytics は任意で設定
 
 #### 3.2 Web アプリの追加
+
 1. プロジェクト設定 → 「アプリを追加」→ Web を選択
 2. アプリ名を入力（例: `dekita-calendar-web`）
 3. Firebase SDK 設定をコピー
 
 #### 3.3 Firestore Database の設定
+
 1. 「Firestore Database」→ 「データベースの作成」
 2. **テストモード** で開始（後でセキュリティルールを設定）
 3. ロケーションを選択（推奨: `asia-northeast1`）
 
 #### 3.4 Authentication の設定
+
 1. 「Authentication」→ 「始める」
 2. 「Sign-in method」タブ
 3. 「メール/パスワード」を有効化
@@ -90,6 +94,7 @@ npm run dev
 ### VS Code 設定
 
 `.vscode/settings.json`:
+
 ```json
 {
   "editor.formatOnSave": true,
@@ -163,36 +168,45 @@ npm run type-check
 ### よくある問題
 
 #### Firebase 接続エラー
+
 ```
 Firebase: Error (auth/invalid-api-key)
 ```
+
 **解決方法**: `.env.local` の Firebase 設定を確認
 
 #### 権限エラー
+
 ```
 FirebaseError: Missing or insufficient permissions
 ```
+
 **解決方法**: Firestore のセキュリティルールを確認
 
 #### ビルドエラー
+
 ```
 Module not found: Can't resolve '@/lib/api'
 ```
+
 **解決方法**: TypeScript の paths 設定を確認
 
 ### デバッグ方法
 
 #### 1. ブラウザ開発者ツール
+
 - Console タブでエラーログを確認
 - Network タブで API 通信を確認
 
 #### 2. Firebase デバッグ
+
 ```javascript
 // Firebase の詳細ログを有効化
 firebase.firestore.setLogLevel('debug')
 ```
 
 #### 3. Next.js デバッグ
+
 ```bash
 # 詳細ログでサーバー起動
 DEBUG=* npm run dev
@@ -210,13 +224,13 @@ service cloud.firestore {
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
-    
+
     // ファミリーデータは同じ家族のみアクセス可能
     match /tasks/{taskId} {
-      allow read, write: if request.auth != null 
+      allow read, write: if request.auth != null
         && resource.data.familyId == getUserFamilyId(request.auth.uid);
     }
-    
+
     // ヘルパー関数
     function getUserFamilyId(uid) {
       return get(/databases/$(database)/documents/users/$(uid)).data.familyId;
@@ -228,6 +242,7 @@ service cloud.firestore {
 ### 環境変数の本番設定
 
 本番環境では以下の環境変数を設定：
+
 - Firebase の本番プロジェクト設定
 - セキュリティ強化された設定値
 

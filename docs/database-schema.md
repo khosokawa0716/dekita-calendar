@@ -23,14 +23,14 @@ firestore/
 
 ### フィールド定義
 
-| フィールド名 | 型 | 必須 | 説明 | 例 |
-|-------------|----|----|------|-----|
-| id | string | ✅ | ドキュメントID（Firebase AuthのUID） | "firebase_auth_uid_123" |
-| email | string | ✅ | メールアドレス | "parent@example.com" |
-| displayName | string | ✅ | 表示名 | "太郎" |
-| role | string | ✅ | ユーザーの役割 | "parent" / "child" |
-| familyId | string | ✅ | 家族ID（データ分離用） | "family_123" |
-| createdAt | Timestamp | ✅ | 作成日時 | serverTimestamp() |
+| フィールド名 | 型        | 必須 | 説明                                 | 例                      |
+| ------------ | --------- | ---- | ------------------------------------ | ----------------------- |
+| id           | string    | ✅   | ドキュメントID（Firebase AuthのUID） | "firebase_auth_uid_123" |
+| email        | string    | ✅   | メールアドレス                       | "parent@example.com"    |
+| displayName  | string    | ✅   | 表示名                               | "太郎"                  |
+| role         | string    | ✅   | ユーザーの役割                       | "parent" / "child"      |
+| familyId     | string    | ✅   | 家族ID（データ分離用）               | "family_123"            |
+| createdAt    | Timestamp | ✅   | 作成日時                             | serverTimestamp()       |
 
 ### インデックス
 
@@ -57,15 +57,15 @@ firestore/
 
 ### フィールド定義
 
-| フィールド名 | 型 | 必須 | 説明 | 例 |
-|-------------|----|----|------|-----|
-| id | string | ✅ | ドキュメントID（自動生成） | "task_123abc" |
-| title | string | ✅ | タスクタイトル | "歯磨き" |
-| date | string | ✅ | 実行日（YYYY-MM-DD形式） | "2024-01-15" |
-| createdBy | string | ✅ | 作成者のユーザーID | "firebase_auth_uid_123" |
-| familyId | string | ✅ | 家族ID | "family_123" |
-| childrenStatus | Object | ✅ | 子どもごとの完了状態 | 下記参照 |
-| createdAt | Timestamp | ✅ | 作成日時 | serverTimestamp() |
+| フィールド名   | 型        | 必須 | 説明                       | 例                      |
+| -------------- | --------- | ---- | -------------------------- | ----------------------- |
+| id             | string    | ✅   | ドキュメントID（自動生成） | "task_123abc"           |
+| title          | string    | ✅   | タスクタイトル             | "歯磨き"                |
+| date           | string    | ✅   | 実行日（YYYY-MM-DD形式）   | "2024-01-15"            |
+| createdBy      | string    | ✅   | 作成者のユーザーID         | "firebase_auth_uid_123" |
+| familyId       | string    | ✅   | 家族ID                     | "family_123"            |
+| childrenStatus | Object    | ✅   | 子どもごとの完了状態       | 下記参照                |
+| createdAt      | Timestamp | ✅   | 作成日時                   | serverTimestamp()       |
 
 ### childrenStatus オブジェクト構造
 
@@ -116,15 +116,15 @@ firestore/
 
 ### フィールド定義
 
-| フィールド名 | 型 | 必須 | 説明 | 例 |
-|-------------|----|----|------|-----|
-| id | string | ✅ | ドキュメントID（自動生成） | "template_abc123" |
-| title | string | ✅ | テンプレートタイトル | "歯磨き" |
-| createdBy | string | ✅ | 作成者のユーザーID | "parent_uid_123" |
-| familyId | string | ✅ | 家族ID | "family_123" |
-| repeatType | string | ✅ | 繰り返しタイプ | "everyday" / "weekday" / "custom" / "none" |
-| repeatDays | number[] | - | 繰り返し曜日（customの場合）| [1, 2, 3, 4, 5] |
-| createdAt | Timestamp | ✅ | 作成日時 | serverTimestamp() |
+| フィールド名 | 型        | 必須 | 説明                         | 例                                         |
+| ------------ | --------- | ---- | ---------------------------- | ------------------------------------------ |
+| id           | string    | ✅   | ドキュメントID（自動生成）   | "template_abc123"                          |
+| title        | string    | ✅   | テンプレートタイトル         | "歯磨き"                                   |
+| createdBy    | string    | ✅   | 作成者のユーザーID           | "parent_uid_123"                           |
+| familyId     | string    | ✅   | 家族ID                       | "family_123"                               |
+| repeatType   | string    | ✅   | 繰り返しタイプ               | "everyday" / "weekday" / "custom" / "none" |
+| repeatDays   | number[]  | -    | 繰り返し曜日（customの場合） | [1, 2, 3, 4, 5]                            |
+| createdAt    | Timestamp | ✅   | 作成日時                     | serverTimestamp()                          |
 
 ### repeatType の値
 
@@ -159,14 +159,14 @@ firestore/
 
 ### フィールド定義
 
-| フィールド名 | 型 | 必須 | 説明 | 例 |
-|-------------|----|----|------|-----|
-| id | string | ✅ | ドキュメントID（{userId}_{date}形式） | "child_uid_2024-01-15" |
-| userId | string | ✅ | 子どものユーザーID | "child_uid_123" |
-| date | string | ✅ | 達成日（YYYY-MM-DD形式） | "2024-01-15" |
-| completedCount | number | ✅ | 完了したタスク数 | 5 |
-| createdAt | Timestamp | - | 初回作成日時 | serverTimestamp() |
-| updatedAt | Timestamp | ✅ | 最終更新日時 | serverTimestamp() |
+| フィールド名   | 型        | 必須 | 説明                                   | 例                     |
+| -------------- | --------- | ---- | -------------------------------------- | ---------------------- |
+| id             | string    | ✅   | ドキュメントID（{userId}\_{date}形式） | "child_uid_2024-01-15" |
+| userId         | string    | ✅   | 子どものユーザーID                     | "child_uid_123"        |
+| date           | string    | ✅   | 達成日（YYYY-MM-DD形式）               | "2024-01-15"           |
+| completedCount | number    | ✅   | 完了したタスク数                       | 5                      |
+| createdAt      | Timestamp | -    | 初回作成日時                           | serverTimestamp()      |
+| updatedAt      | Timestamp | ✅   | 最終更新日時                           | serverTimestamp()      |
 
 ### 特殊な仕様
 
@@ -246,19 +246,19 @@ User Relationships:
 ```javascript
 // ユーザーは自分のデータのみアクセス可能
 match /users/{userId} {
-  allow read, write: if request.auth != null 
+  allow read, write: if request.auth != null
     && request.auth.uid == userId;
 }
 
 // 家族データは同じfamilyIdのユーザーのみアクセス可能
 match /tasks/{taskId} {
-  allow read, write: if request.auth != null 
+  allow read, write: if request.auth != null
     && resource.data.familyId == getUserFamilyId(request.auth.uid);
 }
 
 // 達成記録は本人のみアクセス可能
 match /achievements/{achievementId} {
-  allow read, write: if request.auth != null 
+  allow read, write: if request.auth != null
     && resource.data.userId == request.auth.uid;
 }
 ```
@@ -285,20 +285,20 @@ match /achievements/{achievementId} {
 
 ---
 
-##  API使用例
+## API使用例
 
 ### タスク作成
 
 ```typescript
 await taskAPI.create({
-  title: "朝の歯磨き",
-  date: "2024-01-15",
-  createdBy: "parent_uid",
-  familyId: "family_123",
+  title: '朝の歯磨き',
+  date: '2024-01-15',
+  createdBy: 'parent_uid',
+  familyId: 'family_123',
   childrenStatus: {
-    "child1_uid": { isCompleted: false, comment: "" },
-    "child2_uid": { isCompleted: false, comment: "" }
-  }
+    child1_uid: { isCompleted: false, comment: '' },
+    child2_uid: { isCompleted: false, comment: '' },
+  },
 })
 ```
 
@@ -306,7 +306,7 @@ await taskAPI.create({
 
 ```typescript
 // タスク完了時に自動実行
-await achievementAPI.incrementCount("child1_uid", "2024-01-15")
+await achievementAPI.incrementCount('child1_uid', '2024-01-15')
 ```
 
 ---
