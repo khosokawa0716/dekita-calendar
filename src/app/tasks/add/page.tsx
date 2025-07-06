@@ -1,28 +1,29 @@
 'use client'
 
 import { useState } from 'react'
-import { addDoc, collection } from 'firebase/firestore'
-import { db } from '@/lib/firebase'
 import { getTodayString } from '@/lib/dateUtils'
 import { useAuthRedirect } from '@/hooks/useAuthRedirect'
 import { useUserInfo } from '@/hooks/useUserInfo'
 import { useFamilyChildren } from '@/hooks/useFamilyChildren'
 import { RoleGuard } from '@/components/RoleGuard'
+import { taskAPI } from '@/lib/api'
 
 export default function TaskAddPage() {
   useAuthRedirect()
   const { userInfo } = useUserInfo()
-  const { children, loading: childrenLoading } = useFamilyChildren(userInfo?.familyId)
+  const { children, loading: childrenLoading } = useFamilyChildren(
+    userInfo?.familyId
+  )
 
   const [newTitle, setNewTitle] = useState('')
   const [selectedChildren, setSelectedChildren] = useState<string[]>([])
-  
+
   if (!userInfo) return <div>Loading...</div>
 
   const toggleChildSelection = (childId: string) => {
-    setSelectedChildren(prev => 
-      prev.includes(childId) 
-        ? prev.filter(id => id !== childId)
+    setSelectedChildren((prev) =>
+      prev.includes(childId)
+        ? prev.filter((id) => id !== childId)
         : [...prev, childId]
     )
   }
@@ -36,30 +37,26 @@ export default function TaskAddPage() {
 
     try {
       const today = getTodayString()
-      
+
       // 選択された子どもたちの初期状態を設定
       const initialChildrenStatus: { [childId: string]: any } = {}
-      selectedChildren.forEach(childId => {
+      selectedChildren.forEach((childId) => {
         initialChildrenStatus[childId] = {
           isCompleted: false,
           comment: '',
-          completedAt: null
+          completedAt: null,
         }
       })
-      
+
       const taskData = {
         title: newTitle,
-        // 既存フィールド（互換性のため残す）
-        isCompleted: false,
-        userId: selectedChildren[0], // 最初の子どものIDを設定（下位互換）
-        childComment: '',
-        // 新しい複数子ども対応フィールド
         childrenStatus: initialChildrenStatus,
         date: today,
         createdBy: userInfo.id,
         familyId: userInfo.familyId,
+        userId: selectedChildren[0], // 下位互換性のため
       }
-      await addDoc(collection(db, 'tasks'), taskData)
+      await taskAPI.create(taskData)
       alert('タスクを登録しました')
       setNewTitle('')
       setSelectedChildren([])
@@ -73,7 +70,7 @@ export default function TaskAddPage() {
     <RoleGuard allowedRoles={['parent']}>
       <main className="p-4">
         <h1 className="text-2xl font-bold mb-4">タスクを登録する</h1>
-        
+
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-2">タスク名</label>

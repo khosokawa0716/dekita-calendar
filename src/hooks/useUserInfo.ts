@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { auth, db } from '@/lib/firebase'
-import { doc, getDoc } from 'firebase/firestore'
+import { auth } from '@/lib/firebase'
 import { onAuthStateChanged } from 'firebase/auth'
+import { userAPI } from '@/lib/api'
 
 type UserInfo = {
   id: string
@@ -19,16 +19,14 @@ export function useUserInfo() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
-        const userRef = doc(db, 'users', currentUser.uid)
-        const userSnap = await getDoc(userRef)
+        const userData = await userAPI.getById(currentUser.uid)
 
-        if (userSnap.exists()) {
-          const data = userSnap.data()
+        if (userData) {
           setUserInfo({
             id: currentUser.uid,
-            displayName: data.displayName,
-            role: data.role,
-            familyId: data.familyId,
+            displayName: userData.displayName,
+            role: userData.role,
+            familyId: userData.familyId,
           })
         }
       }

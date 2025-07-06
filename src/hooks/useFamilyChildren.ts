@@ -1,8 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { db } from '@/lib/firebase'
-import { collection, query, where, getDocs } from 'firebase/firestore'
+import { userAPI } from '@/lib/api'
 
 type FamilyChild = {
   id: string
@@ -22,18 +21,13 @@ export function useFamilyChildren(familyId: string | undefined) {
       }
 
       try {
-        const q = query(
-          collection(db, 'users'),
-          where('familyId', '==', familyId),
-          where('role', '==', 'child')
-        )
-        const snapshot = await getDocs(q)
-        const childrenList = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          displayName: doc.data().displayName,
-          role: doc.data().role,
+        const users = await userAPI.getChildrenByFamilyId(familyId)
+        const childrenList = users.map((user) => ({
+          id: user.id,
+          displayName: user.displayName,
+          role: user.role,
         })) as FamilyChild[]
-        
+
         setChildren(childrenList)
       } catch (error) {
         console.error('子どもリスト取得エラー:', error)

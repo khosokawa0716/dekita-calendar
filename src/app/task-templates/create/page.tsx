@@ -2,11 +2,9 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { addDoc, collection } from 'firebase/firestore'
-import { db } from '@/lib/firebase'
 import { useUserInfo } from '@/hooks/useUserInfo'
-import { serverTimestamp } from 'firebase/firestore'
 import { RoleGuard } from '@/components/RoleGuard'
+import { taskTemplateAPI } from '@/lib/api'
 
 export default function TaskTemplateCreatePage() {
   const router = useRouter()
@@ -45,11 +43,10 @@ export default function TaskTemplateCreatePage() {
         title,
         createdBy: userInfo.id,
         familyId: userInfo.familyId,
-        createdAt: serverTimestamp(),
         repeatType,
         ...(repeatType === 'custom' ? { repeatDays: customDays } : {}),
       }
-      await addDoc(collection(db, 'taskTemplates'), templateData)
+      await taskTemplateAPI.create(templateData)
       alert('テンプレートを追加しました')
       router.push('/task-templates')
     } catch (error) {

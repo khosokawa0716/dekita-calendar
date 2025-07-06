@@ -1,31 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-  addDoc,
-  deleteDoc,
-  doc,
-} from 'firebase/firestore'
-import { db } from '@/lib/firebase'
 import { useUserInfo } from '@/hooks/useUserInfo'
 import { useFamilyChildren } from '@/hooks/useFamilyChildren'
 import Link from 'next/link'
 import { getTodayString } from '@/lib/dateUtils'
 import { RoleGuard } from '@/components/RoleGuard'
-
-type TaskTemplate = {
-  id: string
-  title: string
-  createdBy: string
-  familyId: string
-  repeatType?: 'none' | 'everyday' | 'weekday' | 'custom'
-  repeatDays?: number[]
-  createdAt: any
-}
+import { taskTemplateAPI, taskAPI } from '@/lib/api'
+import type { TaskTemplate } from '@/types/task'
 
 const repeatTypeLabel = (type: string, days?: number[]) => {
   switch (type) {
@@ -44,16 +26,20 @@ const repeatTypeLabel = (type: string, days?: number[]) => {
 
 export default function TaskTemplateListPage() {
   const { userInfo, loading } = useUserInfo()
-  const { children, loading: childrenLoading } = useFamilyChildren(userInfo?.familyId)
+  const { children, loading: childrenLoading } = useFamilyChildren(
+    userInfo?.familyId
+  )
   const [templates, setTemplates] = useState<TaskTemplate[]>([])
   const [showChildSelection, setShowChildSelection] = useState(false)
-  const [selectedTemplate, setSelectedTemplate] = useState<TaskTemplate | null>(null)
+  const [selectedTemplate, setSelectedTemplate] = useState<TaskTemplate | null>(
+    null
+  )
   const [selectedChildren, setSelectedChildren] = useState<string[]>([])
 
   const toggleChildSelection = (childId: string) => {
-    setSelectedChildren(prev => 
-      prev.includes(childId) 
-        ? prev.filter(id => id !== childId)
+    setSelectedChildren((prev) =>
+      prev.includes(childId)
+        ? prev.filter((id) => id !== childId)
         : [...prev, childId]
     )
   }
@@ -63,18 +49,7 @@ export default function TaskTemplateListPage() {
       if (!userInfo) return
 
       try {
-        const q = query(
-          collection(db, 'taskTemplates'),
-          where('familyId', '==', userInfo.familyId)
-        )
-        const snapshot = await getDocs(q)
-        const list = snapshot.docs.map((doc) => {
-          const data = doc.data()
-          return {
-            id: doc.id,
-            ...data,
-          }
-        }) as TaskTemplate[]
+        const list = await taskTemplateAPI.getByFamilyId(userInfo.familyId)
         setTemplates(list)
       } catch (error) {
         console.error('テンプレート取得エラー:', error)
@@ -88,7 +63,7 @@ export default function TaskTemplateListPage() {
 
   // 子どもの名前を取得するヘルパー関数
   const getChildName = (childId: string) => {
-    const child = children.find(c => c.id === childId)
+    const child = children.find((c) => c.id === childId)
     return child ? child.displayName : 'Unknown'
   }
 
@@ -104,7 +79,9 @@ export default function TaskTemplateListPage() {
     }
 
     // 全ての子どもを選択した状態で一括生成するか確認
-    const confirmed = confirm(`本日のタスクを家族の全ての子ども（${children.map(c => c.displayName).join(', ')}）に一括生成しますか？`)
+    const confirmed = confirm(
+      `本日のタスクを家族の全ての子ども（${children.map((c) => c.displayName).join(', ')}）に一括生成しますか？`
+    )
     if (!confirmed) return
 
     const today = new Date()
@@ -113,23 +90,19 @@ export default function TaskTemplateListPage() {
     console.log('本日の日付:', todayStr, '曜日:', day)
 
     try {
-      const templatesRef = collection(db, 'taskTemplates')
-      const q = query(
-        templatesRef,
-        where('createdBy', '==', userInfo.id),
-        where('familyId', '==', userInfo.familyId)
+      const allTemplates = await taskTemplateAPI.getByCreatedBy(
+        userInfo.id,
+        userInfo.familyId
       )
-      const snapshot = await getDocs(q)
-      console.log('テンプレートの取得件数:', snapshot.docs.length)
+      console.log('テンプレートの取得件数:', allTemplates.length)
 
-      const matchedTemplates = snapshot.docs.filter((doc) => {
-        const data = doc.data()
-        const type = data.repeatType
-        console.log('テンプレート:', data.title, 'repeatType:', type)
+      const matchedTemplates = allTemplates.filter((template) => {
+        const type = template.repeatType
+        console.log('テンプレート:', template.title, 'repeatType:', type)
         if (type === 'everyday') return true
         if (type === 'weekday' && day >= 1 && day <= 5) return true
-        if (type === 'custom' && Array.isArray(data.repeatDays)) {
-          return data.repeatDays.includes(day)
+        if (type === 'custom' && Array.isArray(template.repeatDays)) {
+          return template.repeatDays.includes(day)
         }
         return false
       })
@@ -138,49 +111,44 @@ export default function TaskTemplateListPage() {
       let createdTasksCount = 0
 
       for (const template of matchedTemplates) {
-        const data = template.data()
-        console.log('タスク生成対象テンプレート:', data)
-        
+        console.log('タスク生成対象テンプレート:', template)
+
         // 🔒 同じテンプレートIDの今日のタスクが既に存在しているかチェック
-        const tasksRef = collection(db, 'tasks')
-        const taskQuery = query(
-          tasksRef,
-          where('createdBy', '==', userInfo.id),
-          where('date', '==', todayStr),
-          where('title', '==', data.title) // ← タイトルで判別（必要なら他のフィールドも追加）
+        const existingTasks = await taskAPI.getByFamilyIdAndDate(
+          userInfo.familyId,
+          todayStr
         )
-        const existingTasks = await getDocs(taskQuery)
-        if (!existingTasks.empty) {
-          console.log(`既にタスクあり: ${data.title}`)
+        const duplicateTask = existingTasks.find(
+          (task) => task.title === template.title
+        )
+
+        if (duplicateTask) {
+          console.log(`既にタスクあり: ${template.title}`)
           continue // スキップ
         }
 
         // 全ての子どもに対してタスクを生成
         const initialChildrenStatus: { [childId: string]: any } = {}
-        children.forEach(child => {
+        children.forEach((child) => {
           initialChildrenStatus[child.id] = {
             isCompleted: false,
             comment: '',
-            completedAt: null
+            completedAt: null,
           }
         })
 
         const taskData = {
-          title: data.title,
-          // 既存フィールド（互換性のため残す）
-          isCompleted: false,
-          userId: children[0]?.id || userInfo.id, // 最初の子どものIDを設定（下位互換）
-          childComment: '',
-          // 新しい複数子ども対応フィールド
+          title: template.title,
           childrenStatus: initialChildrenStatus,
           date: todayStr,
           familyId: userInfo.familyId,
           createdBy: userInfo.id,
+          userId: children[0]?.id || userInfo.id, // 下位互換性のため
         }
 
         console.log('登録するタスクデータ:', taskData)
-        await addDoc(collection(db, 'tasks'), taskData)
-        console.log('タスクを登録しました:', data.title)
+        await taskAPI.create(taskData)
+        console.log('タスクを登録しました:', template.title)
         createdTasksCount++
       }
 
@@ -217,28 +185,26 @@ export default function TaskTemplateListPage() {
     try {
       // 選択された子どもたちの初期状態を設定
       const initialChildrenStatus: { [childId: string]: any } = {}
-      selectedChildren.forEach(childId => {
+      selectedChildren.forEach((childId) => {
         initialChildrenStatus[childId] = {
           isCompleted: false,
           comment: '',
-          completedAt: null
+          completedAt: null,
         }
       })
 
-      await addDoc(collection(db, 'tasks'), {
+      await taskAPI.create({
         title: selectedTemplate.title,
-        // 既存フィールド（互換性のため残す）
-        isCompleted: false,
-        userId: selectedChildren[0], // 最初の子どものIDを設定（下位互換）
-        childComment: '',
-        // 新しい複数子ども対応フィールド
         childrenStatus: initialChildrenStatus,
         date: dateStr,
         createdBy: userInfo.id,
         familyId: userInfo.familyId,
+        userId: selectedChildren[0], // 下位互換性のため
       })
-      
-      alert(`${selectedChildren.length}人の子どもに「${selectedTemplate.title}」を割り当てました`)
+
+      alert(
+        `${selectedChildren.length}人の子どもに「${selectedTemplate.title}」を割り当てました`
+      )
       setShowChildSelection(false)
       setSelectedTemplate(null)
       setSelectedChildren([])
@@ -253,7 +219,7 @@ export default function TaskTemplateListPage() {
     if (!confirmed) return
 
     try {
-      await deleteDoc(doc(db, 'taskTemplates', id))
+      await taskTemplateAPI.delete(id)
       alert('テンプレートを削除しました')
       // 一覧の再取得 or ローカルstateから削除
       setTemplates((prev) => prev.filter((t) => t.id !== id))
@@ -322,7 +288,7 @@ export default function TaskTemplateListPage() {
             ))}
           </ul>
         )}
-        
+
         {/* 子ども選択モーダル */}
         {showChildSelection && selectedTemplate && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -330,13 +296,16 @@ export default function TaskTemplateListPage() {
               <h3 className="text-lg font-bold mb-4">
                 「{selectedTemplate.title}」を割り当てる子どもを選択
               </h3>
-              
+
               {childrenLoading ? (
                 <p className="text-gray-500">読み込み中...</p>
               ) : children.length > 0 ? (
                 <div className="space-y-3 mb-6">
                   {children.map((child) => (
-                    <label key={child.id} className="flex items-center space-x-3">
+                    <label
+                      key={child.id}
+                      className="flex items-center space-x-3"
+                    >
                       <input
                         type="checkbox"
                         checked={selectedChildren.includes(child.id)}
@@ -352,7 +321,7 @@ export default function TaskTemplateListPage() {
                   家族に子どもが登録されていません。
                 </p>
               )}
-              
+
               <div className="flex space-x-3">
                 <button
                   onClick={executeAddTask}

@@ -2,10 +2,10 @@
 
 import { useState } from 'react'
 import { createUserWithEmailAndPassword } from 'firebase/auth'
-import { auth, db } from '@/lib/firebase'
-import { doc, setDoc } from 'firebase/firestore'
+import { auth } from '@/lib/firebase'
 import { useAlreadyLoggedInRedirect } from '@/hooks/useAlreadyLoggedInRedirect'
 import Link from 'next/link'
+import { userAPI } from '@/lib/api'
 
 export default function SignupPage() {
   // 既にログインしている場合はトップページにリダイレクト
@@ -41,11 +41,11 @@ export default function SignupPage() {
       )
       const uid = userCredential.user.uid
 
-      await setDoc(doc(db, 'users', uid), {
+      await userAPI.create(uid, {
         email,
-        role, // ← ここで保存
+        displayName: email.split('@')[0], // メールアドレスの@マーク前を初期名に
+        role: role as 'parent' | 'child',
         familyId: '', // あとで設定できるようにする想定
-        createdAt: new Date(),
       })
 
       setModalMessage('登録に成功しました！')

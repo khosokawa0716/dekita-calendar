@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { doc, getDoc, updateDoc } from 'firebase/firestore'
-import { db } from '@/lib/firebase'
 import { useUserInfo } from '@/hooks/useUserInfo'
 import { RoleGuard } from '@/components/RoleGuard'
+import { taskTemplateAPI } from '@/lib/api'
 
 const nextPage = '/task-templates'
 
@@ -40,29 +39,23 @@ export default function TaskTemplateEditPage() {
         return
       }
 
-      const templateRef = doc(db, 'taskTemplates', templateId)
-      const templateSnap = await getDoc(templateRef)
-      console.log(
-        'Fetched template:',
-        templateSnap.exists(),
-        templateSnap.data()
-      )
-      if (!templateSnap.exists()) {
+      const template = await taskTemplateAPI.getById(templateId)
+      console.log('Fetched template:', template ? true : false, template)
+      if (!template) {
         alert('テンプレートが見つかりません')
         router.push(nextPage)
         return
       }
       console.log('ユーザー情報:', userInfo, 'テンプレートID:', templateId)
-      const data = templateSnap.data()
-      if (data.createdBy !== userInfo.id) {
+      if (template.createdBy !== userInfo.id) {
         alert('このテンプレートを編集する権限がありません')
         router.push(nextPage)
         return
       }
 
-      setTitle(data.title)
-      setRepeatType(data.repeatType ?? 'none')
-      setRepeatDays(data.repeatDays ?? [])
+      setTitle(template.title)
+      setRepeatType(template.repeatType || 'none')
+      setRepeatDays(template.repeatDays || [])
       setTemplateLoaded(true)
     }
 
@@ -76,8 +69,7 @@ export default function TaskTemplateEditPage() {
     }
 
     try {
-      const templateRef = doc(db, 'taskTemplates', templateId!)
-      await updateDoc(templateRef, {
+      await taskTemplateAPI.update(templateId!, {
         title,
         repeatType,
         repeatDays: repeatType === 'custom' ? repeatDays : [],

@@ -1,8 +1,7 @@
 'use client'
 
 import { useUserInfo } from '@/hooks/useUserInfo'
-import { auth, db } from '@/lib/firebase'
-import { doc, updateDoc, deleteDoc } from 'firebase/firestore'
+import { auth } from '@/lib/firebase'
 import {
   EmailAuthProvider,
   reauthenticateWithCredential,
@@ -10,6 +9,7 @@ import {
 } from 'firebase/auth'
 import { useState, useEffect } from 'react'
 import { RoleGuard } from '@/components/RoleGuard'
+import { userAPI } from '@/lib/api'
 
 export default function SettingsPage() {
   const { userInfo } = useUserInfo()
@@ -20,10 +20,13 @@ export default function SettingsPage() {
 
   const handleSubmit = async () => {
     if (!userInfo) return
-    const userRef = doc(db, 'users', userInfo.id)
-    await updateDoc(userRef, { displayName, familyId })
-    alert('設定を保存しました')
-    // router.refresh() など必要に応じて
+    try {
+      await userAPI.update(userInfo.id, { displayName, familyId })
+      alert('設定を保存しました')
+    } catch (error) {
+      console.error('設定保存エラー:', error)
+      alert('保存に失敗しました')
+    }
   }
 
   useEffect(() => {
@@ -52,7 +55,7 @@ export default function SettingsPage() {
       await reauthenticateWithCredential(auth.currentUser, credential)
 
       // Firestoreのデータ削除
-      await deleteDoc(doc(db, 'users', userInfo.id))
+      await userAPI.delete(userInfo.id)
 
       // Firebase Authから削除
       await deleteUser(auth.currentUser)

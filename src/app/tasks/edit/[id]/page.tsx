@@ -2,11 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { db } from '@/lib/firebase'
-import { doc, getDoc, updateDoc } from 'firebase/firestore'
 import { auth } from '@/lib/firebase'
 import { onAuthStateChanged } from 'firebase/auth'
 import { RoleGuard } from '@/components/RoleGuard'
+import { taskAPI } from '@/lib/api'
 
 export default function TaskEditPage() {
   const { id } = useParams()
@@ -25,35 +24,31 @@ export default function TaskEditPage() {
           return
         }
 
-        const taskRef = doc(db, 'tasks', id)
-        const taskSnap = await getDoc(taskRef)
+        const task = await taskAPI.getById(id)
 
-        if (!taskSnap.exists()) {
+        if (!task) {
           alert('タスクが見つかりません')
           router.push('/tasks')
           return
         }
-        const data = taskSnap.data()
 
-        console.log('タスクデータ:', taskSnap.data())
+        console.log('タスクデータ:', task)
         console.log('ユーザーID:', user.uid)
         console.log('タスクID:', id)
-        console.log('createBy:', data.createdBy)
-        if (data.createdBy !== user.uid) {
+        console.log('createBy:', task.createdBy)
+        if (task.createdBy !== user.uid) {
           alert('このタスクを編集する権限がありません')
           router.push('/tasks')
           return
         }
 
-        setTitle(data.title || '')
+        setTitle(task.title || '')
         setLoading(false)
       })
 
-      const taskRef = doc(db, 'tasks', id)
-      const taskSnap = await getDoc(taskRef)
-      if (taskSnap.exists()) {
-        const data = taskSnap.data()
-        setTitle(data.title || '')
+      const task = await taskAPI.getById(id)
+      if (task) {
+        setTitle(task.title || '')
       }
       setLoading(false)
     }
@@ -62,8 +57,7 @@ export default function TaskEditPage() {
 
   const handleUpdate = async () => {
     if (!id || typeof id !== 'string') return
-    const taskRef = doc(db, 'tasks', id)
-    await updateDoc(taskRef, { title })
+    await taskAPI.update(id, { title })
     router.push('/tasks') // 保存後に一覧へ戻る
   }
 
