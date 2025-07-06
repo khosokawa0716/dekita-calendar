@@ -125,6 +125,10 @@ npm run type-check
 
 ## 🗄️ 初期データ設定
 
+### データ構造の理解
+
+開発を始める前に、[データベース設計書](database-schema.md) でFirestoreのコレクション構造を確認してください。
+
 ### テストユーザーの作成
 
 1. アプリにアクセスして「ユーザー登録」
@@ -231,6 +235,9 @@ service cloud.firestore {
 
 問題が解決しない場合は、以下を確認してください：
 
-1. [よくある質問](./faq.md)
-2. [Issue トラッカー](../issues)
-3. [開発チームへの連絡](mailto:dev@example.com)
+1. [データベース設計書](database-schema.md) - コレクション構造
+2. [API仕様書](api-reference.md) - API使用方法
+3. [アーキテクチャ設計](architecture.md) - システム全体像
+4. [よくある質問](./faq.md)
+5. [Issue トラッカー](../issues)
+6. [開発チームへの連絡](mailto:dev@example.com)
