@@ -35,7 +35,7 @@ function TaskItem({
   loading: boolean
   currentUserId?: string
 }) {
-  // 現在のユーザーの状態を取得（新構造 or 旧構造から）
+  // 現在のユーザーの状態を取得
   const getUserStatus = () => {
     if (
       currentUserId &&
@@ -44,10 +44,10 @@ function TaskItem({
     ) {
       return task.childrenStatus[currentUserId]
     }
-    // 旧構造との互換性
+    // デフォルト値
     return {
-      isCompleted: task.isCompleted ?? false,
-      comment: task.comment || task.childComment || '',
+      isCompleted: false,
+      comment: '',
     }
   }
 
@@ -168,19 +168,9 @@ export default function CalendarPage() {
         data[date].total += 1
 
         // 新構造での完了判定: childrenStatus内に完了した子どもがいるかチェック
-        let isCompleted = false
-        if (
-          task.childrenStatus &&
-          Object.keys(task.childrenStatus).length > 0
-        ) {
-          // 少なくとも一人の子どもが完了していれば「完了」とみなす
-          isCompleted = Object.values(task.childrenStatus).some(
-            (status: any) => status.isCompleted
-          )
-        } else {
-          // 旧構造との互換性
-          isCompleted = task.isCompleted || false
-        }
+        const isCompleted = Object.values(task.childrenStatus).some(
+          (status: any) => status.isCompleted
+        )
 
         if (isCompleted) {
           data[date].completed += 1
@@ -205,11 +195,7 @@ export default function CalendarPage() {
       if (userInfo.role === 'child') {
         tasks = tasks.filter((task) => {
           // 新構造: childrenStatusに自分のIDがある
-          if (task.childrenStatus && task.childrenStatus[userInfo.id]) {
-            return true
-          }
-          // 旧構造: userIdが自分のID
-          return task.userId === userInfo.id
+          return task.childrenStatus && task.childrenStatus[userInfo.id]
         })
       }
 
@@ -233,37 +219,29 @@ export default function CalendarPage() {
 
     setLoading(true)
     try {
-      // 新構造での更新: childrenStatusに現在のユーザーの状態を保存
-      const updateData = {
-        [`childrenStatus.${userInfo.id}`]: {
+      // 現在のタスクを取得
+      const currentTask = todayTasks.find(task => task.id === taskId)
+      if (!currentTask) return
+
+      // 新構造での更新: childrenStatusを更新
+      const updatedChildrenStatus = {
+        ...currentTask.childrenStatus,
+        [userInfo.id]: {
           isCompleted,
           comment,
-          completedAt: isCompleted ? new Date() : null,
+          completedAt: isCompleted ? new Date() : undefined,
         },
-        // 下位互換性のため、旧フィールドも更新
-        isCompleted,
-        comment,
       }
 
-      await taskAPI.update(taskId, updateData)
+      await taskAPI.update(taskId, { childrenStatus: updatedChildrenStatus })
 
       // ローカルstateを更新
       setTodayTasks((prev) =>
         prev.map((task) => {
           if (task.id === taskId) {
-            const newChildrenStatus = {
-              ...task.childrenStatus,
-              [userInfo.id]: {
-                isCompleted,
-                comment,
-                completedAt: isCompleted ? new Date() : undefined,
-              },
-            }
             return {
               ...task,
-              isCompleted,
-              comment,
-              childrenStatus: newChildrenStatus,
+              childrenStatus: updatedChildrenStatus,
             }
           }
           return task

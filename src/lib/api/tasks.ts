@@ -21,11 +21,6 @@ export const taskAPI = {
     try {
       const docRef = await addDoc(collection(db, 'tasks'), {
         ...taskData,
-        // 既存データとの互換性を保つため必須フィールド
-        isCompleted: false,
-        userId:
-          taskData.userId || Object.keys(taskData.childrenStatus)[0] || '',
-        childComment: '',
         createdAt: serverTimestamp(),
       })
       return docRef.id
@@ -122,21 +117,6 @@ export const taskAPI = {
     } catch (error) {
       console.error('タスク削除エラー:', error)
       throw new Error('タスクの削除に失敗しました')
-    }
-  },
-
-  /**
-   * タスクの完了状態を切り替え
-   */
-  toggleCompleted: async (id: string, isCompleted: boolean): Promise<void> => {
-    try {
-      const docRef = doc(db, 'tasks', id)
-      await updateDoc(docRef, {
-        isCompleted,
-      })
-    } catch (error) {
-      console.error('タスク完了状態更新エラー:', error)
-      throw new Error('タスクの完了状態の更新に失敗しました')
     }
   },
 

@@ -154,11 +154,6 @@ interface Task {
       completedAt?: Date
     }
   }
-
-  // 旧構造：下位互換性のため保持
-  isCompleted?: boolean
-  userId?: string
-  childComment?: string
 }
 ```
 

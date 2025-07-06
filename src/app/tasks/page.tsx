@@ -31,18 +31,27 @@ export default function TaskListPage() {
     }
   }
 
-  const toggleCompleted = async (task: Task) => {
+  const toggleCompleted = async (task: Task, childId: string) => {
     try {
-      const newCompleted = !task.isCompleted
-      await taskAPI.toggleCompleted(task.id, newCompleted)
+      const currentStatus = task.childrenStatus[childId]
+      const newCompleted = !currentStatus.isCompleted
+      
+      const updatedChildrenStatus = {
+        ...task.childrenStatus,
+        [childId]: {
+          ...currentStatus,
+          isCompleted: newCompleted,
+          completedAt: newCompleted ? new Date() : undefined
+        }
+      }
+      
+      await taskAPI.update(task.id, { childrenStatus: updatedChildrenStatus })
 
       const today = getTodayString()
-      if (task.userId) {
-        if (newCompleted) {
-          await achievementAPI.incrementCount(task.userId, today)
-        } else {
-          await achievementAPI.decrementCount(task.userId, today)
-        }
+      if (newCompleted) {
+        await achievementAPI.incrementCount(childId, today)
+      } else {
+        await achievementAPI.decrementCount(childId, today)
       }
 
       fetchTasks()
@@ -63,15 +72,11 @@ export default function TaskListPage() {
 
   // タスクの完了状況を取得
   const getTaskCompletionStatus = (task: Task) => {
-    if (task.childrenStatus && Object.keys(task.childrenStatus).length > 0) {
-      const completed = Object.values(task.childrenStatus).filter(
-        (status) => status.isCompleted
-      ).length
-      const total = Object.keys(task.childrenStatus).length
-      return { completed, total }
-    }
-    // 旧構造の場合
-    return { completed: task.isCompleted ? 1 : 0, total: 1 }
+    const completed = Object.values(task.childrenStatus).filter(
+      (status) => status.isCompleted
+    ).length
+    const total = Object.keys(task.childrenStatus).length
+    return { completed, total }
   }
 
   return (
@@ -104,7 +109,8 @@ export default function TaskListPage() {
                               ([childId, status]) => (
                                 <div
                                   key={childId}
-                                  className="flex items-center space-x-2 text-sm"
+                                  className="flex items-center space-x-2 text-sm cursor-pointer"
+                                  onClick={() => toggleCompleted(task, childId)}
                                 >
                                   <span
                                     className={`w-4 h-4 rounded-full ${status.isCompleted ? 'bg-green-500' : 'bg-gray-300'}`}

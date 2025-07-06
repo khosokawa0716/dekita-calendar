@@ -54,7 +54,6 @@ export default function TaskAddPage() {
         date: today,
         createdBy: userInfo.id,
         familyId: userInfo.familyId,
-        userId: selectedChildren[0], // 下位互換性のため
       }
       await taskAPI.create(taskData)
       alert('タスクを登録しました')

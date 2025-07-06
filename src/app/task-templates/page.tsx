@@ -143,7 +143,6 @@ export default function TaskTemplateListPage() {
           date: todayStr,
           familyId: userInfo.familyId,
           createdBy: userInfo.id,
-          userId: children[0]?.id || userInfo.id, // 下位互換性のため
         }
 
         console.log('登録するタスクデータ:', taskData)
@@ -199,7 +198,6 @@ export default function TaskTemplateListPage() {
         date: dateStr,
         createdBy: userInfo.id,
         familyId: userInfo.familyId,
-        userId: selectedChildren[0], // 下位互換性のため
       })
 
       alert(

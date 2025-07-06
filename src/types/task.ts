@@ -12,14 +12,6 @@ export interface Task {
   date: string
   createdBy: string
   familyId: string
-
-  // 既存フィールド（下位互換性のため残す）
-  isCompleted?: boolean
-  userId?: string
-  childComment?: string
-  comment?: string
-
-  // 新しい複数子ども対応フィールド
   childrenStatus: { [childId: string]: ChildStatus }
 }
 
@@ -60,12 +52,10 @@ export interface CreateTaskInput {
   createdBy: string
   familyId: string
   childrenStatus: { [childId: string]: ChildStatus }
-  userId?: string // 下位互換性のため
 }
 
 export interface UpdateTaskInput {
   title?: string
-  isCompleted?: boolean
   childrenStatus?: { [childId: string]: ChildStatus }
 }
 

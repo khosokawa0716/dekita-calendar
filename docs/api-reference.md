@@ -47,7 +47,6 @@ interface CreateTaskInput {
   createdBy: string
   familyId: string
   childrenStatus: { [childId: string]: ChildStatus }
-  userId?: string // 下位互換性のため
 }
 ```
 
@@ -124,7 +123,9 @@ IDでタスクを取得します。
 ```typescript
 await taskAPI.update("task_123", {
   title: "新しいタイトル",
-  isCompleted: true
+  childrenStatus: {
+    "child_1": { isCompleted: true, comment: "完了しました！", completedAt: new Date() }
+  }
 })
 ```
 
@@ -134,14 +135,6 @@ await taskAPI.update("task_123", {
 
 **パラメータ:**
 - `id: string` - タスクID
-
-### `taskAPI.toggleCompleted(id, isCompleted)`
-
-タスクの完了状態を切り替えます。
-
-**パラメータ:**
-- `id: string` - タスクID
-- `isCompleted: boolean` - 完了状態
 
 ---
 
@@ -273,11 +266,6 @@ interface Task {
   createdBy: string
   familyId: string
   childrenStatus: { [childId: string]: ChildStatus }
-  
-  // 下位互換性フィールド
-  isCompleted?: boolean
-  userId?: string
-  childComment?: string
 }
 ```
 
