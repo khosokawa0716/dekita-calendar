@@ -13,13 +13,6 @@ type TaskData = {
   [dateStr: string]: { total: number; completed: number }
 }
 
-const taskStateImages = [
-  '/images/zero.png',
-  '/images/one.png',
-  '/images/some.png',
-  '/images/completed.png',
-]
-
 // 個別のタスクアイテムコンポーネント
 function TaskItem({
   task,
@@ -292,12 +285,6 @@ export default function CalendarPage() {
             <p className="text-gray-600">今日のタスクはありません</p>
           )}
         </div>
-        {/* publicにある画像の表示テスト */}
-        <img
-          src={taskStateImages[3]} // 例として最初の画像を表示
-          alt="テスト画像"
-          className="mb-6 w-full max-w-md rounded-lg shadow-sm"
-        />
         <Calendar taskData={taskData} />
       </main>
     </RoleGuard>

@@ -123,6 +123,40 @@ const getDaysInCalendar = (currentDate: Date): Date[] => {
   return Array.from({ length: totalDays }, (_, i) => addDays(startDate, i))
 }
 
+const taskStateImages = [
+  '/images/zero.png',
+  '/images/one.png',
+  '/images/some.png',
+  '/images/completed.png',
+]
+
+function getTaskStateImagePath(
+  taskCount: number,
+  completedCount: number
+): string {
+  if (taskCount < 1 || completedCount < 0 || completedCount > taskCount) {
+    throw new Error('無効な引数です')
+  }
+
+  if (completedCount === taskCount) {
+    return taskStateImages[3] // completed
+  }
+
+  if (completedCount === 0) {
+    return taskStateImages[0] // zero
+  }
+
+  if (taskCount >= 2) {
+    if (completedCount === 1) {
+      return taskStateImages[1] // one
+    } else {
+      return taskStateImages[2] // some
+    }
+  }
+
+  throw new Error('条件に一致しません')
+}
+
 export default function Calendar({ taskData = {} }: Props) {
   // 現在表示している月の日付を管理するstate
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -173,6 +207,15 @@ export default function Calendar({ taskData = {} }: Props) {
         {/* この日付にタスクデータがある場合は完了状況を表示 */}
         {taskData[dateKey] && (
           <div className="mt-1 text-green-600">
+            {/* publicにある画像の表示テスト */}
+            <img
+              src={getTaskStateImagePath(
+                taskData[dateKey].total,
+                taskData[dateKey].completed
+              )} // 例として最初の画像を表示
+              alt="テスト画像"
+              className="mb-6 w-full max-w-md rounded-lg shadow-sm"
+            />
             ✅ {taskData[dateKey].completed}/{taskData[dateKey].total}
           </div>
         )}
