@@ -147,7 +147,6 @@ export default function CalendarPage() {
         startStr,
         endStr
       )
-
       const data: TaskData = {}
 
       tasks.forEach((task) => {
@@ -159,16 +158,24 @@ export default function CalendarPage() {
 
         data[date].total += 1
 
-        // 新構造での完了判定: childrenStatus内に完了した子どもがいるかチェック
-        const isCompleted = Object.values(task.childrenStatus).some(
-          (status: any) => status.isCompleted
-        )
-
-        if (isCompleted) {
-          data[date].completed += 1
+        // カレンダーに表示するためのタスクデータを構築
+        // 親の場合は、全ての子どもが完了しているかを確認
+        // 子どもの場合は、自分のIDで完了状態を確認
+        if (userInfo.role === 'parent') {
+          const allCompleted = Object.values(task.childrenStatus).every(
+            (status: any) => status.isCompleted
+          )
+          if (allCompleted) {
+            data[date].completed += 1
+          }
+        } else if (userInfo.role === 'child') {
+          // 子どもユーザーの場合は、自分のIDで完了状態を確認
+          const childStatus = task.childrenStatus[userInfo.id]
+          if (childStatus && childStatus.isCompleted) {
+            data[date].completed += 1
+          }
         }
       })
-
       setTaskData(data)
     }
 

@@ -194,7 +194,6 @@ export default function Calendar({ taskData = {} }: Props) {
     const dateKey = formatDate(day, 'yyyy-MM-dd') // taskDataのキーとして使用する日付文字列
     const isCurrentMonth = isSameMonth(day, monthStart) // 現在の月かどうかを判定
     const dayNumber = formatDate(day, 'd') // 表示する日の数字
-    console.log(`Task data for ${dateKey}:`, taskData[dateKey]) // デバッグ用ログ
 
     return (
       <div
@@ -206,16 +205,22 @@ export default function Calendar({ taskData = {} }: Props) {
         <div className="font-bold">{dayNumber}</div>
         {/* この日付にタスクデータがある場合は完了状況を表示 */}
         {taskData[dateKey] && (
-          <div className="mt-1 w-[100px] h-[60px] flex items-center justify-center">
-            {/* publicにある画像の表示テスト */}
-            <img
-              src={getTaskStateImagePath(
-                taskData[dateKey].total,
-                taskData[dateKey].completed
-              )} // 例として最初の画像を表示
-              alt="テスト画像"
-              className="max-w-full max-h-full object-contain block rounded-lg shadow-sm"
-            />
+          <div className="w-[100%] h-[60px] flex items-center justify-center">
+            {/* 今日タスクが1つも完了していない場合には、画像ではなく薄い青の背景のマスにする */}
+            {taskData[dateKey].completed === 0 &&
+            dateKey === formatDate(new Date(), 'yyyy-MM-dd') ? (
+              <div className="w-[70%] h-full bg-blue-100 rounded-lg flex items-center justify-center"></div>
+            ) : (
+              // タスクの完了状況に応じて画像を表示
+              <img
+                src={getTaskStateImagePath(
+                  taskData[dateKey].total,
+                  taskData[dateKey].completed
+                )}
+                alt="タスクの完了状況"
+                className="max-w-full max-h-full object-contain block rounded-lg shadow-sm"
+              />
+            )}
           </div>
         )}
       </div>
