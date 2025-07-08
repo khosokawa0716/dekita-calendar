@@ -194,7 +194,7 @@ export default function Calendar({ taskData = {} }: Props) {
     const dateKey = formatDate(day, 'yyyy-MM-dd') // taskDataのキーとして使用する日付文字列
     const isCurrentMonth = isSameMonth(day, monthStart) // 現在の月かどうかを判定
     const dayNumber = formatDate(day, 'd') // 表示する日の数字
-    const hasTask = Boolean(taskData[dateKey])
+    console.log(`Task data for ${dateKey}:`, taskData[dateKey]) // デバッグ用ログ
 
     return (
       <div
@@ -206,7 +206,7 @@ export default function Calendar({ taskData = {} }: Props) {
         <div className="font-bold">{dayNumber}</div>
         {/* この日付にタスクデータがある場合は完了状況を表示 */}
         {taskData[dateKey] && (
-          <div className="mt-1 text-green-600">
+          <div className="mt-1 w-[100px] h-[60px] flex items-center justify-center">
             {/* publicにある画像の表示テスト */}
             <img
               src={getTaskStateImagePath(
@@ -214,9 +214,8 @@ export default function Calendar({ taskData = {} }: Props) {
                 taskData[dateKey].completed
               )} // 例として最初の画像を表示
               alt="テスト画像"
-              className="mb-6 w-full max-w-md rounded-lg shadow-sm"
+              className="max-w-full max-h-full object-contain block rounded-lg shadow-sm"
             />
-            ✅ {taskData[dateKey].completed}/{taskData[dateKey].total}
           </div>
         )}
       </div>
@@ -225,10 +224,6 @@ export default function Calendar({ taskData = {} }: Props) {
 
   return (
     <div className="p-4">
-      {/* 月年の表示 */}
-      <div className="text-xl font-bold mb-2">
-        {formatDate(currentDate, 'yyyy年MM月')}
-      </div>
       <div className="flex items-center justify-between mb-2">
         <button
           onClick={goToPreviousMonth}

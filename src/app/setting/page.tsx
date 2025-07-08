@@ -14,8 +14,6 @@ import { userAPI } from '@/lib/api'
 
 export default function SettingsPage() {
   const { userInfo } = useUserInfo()
-  console.log('userInfo:', userInfo)
-  console.log('userInfo?.role:', userInfo?.role)
   const [displayName, setDisplayName] = useState(userInfo?.displayName ?? '')
   const [familyId, setFamilyId] = useState(userInfo?.familyId ?? '')
 
