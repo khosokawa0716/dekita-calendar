@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react'
 import { useUserInfo } from '@/hooks/useUserInfo'
 import Calendar from '@/components/Calendar'
 import { RoleGuard } from '@/components/RoleGuard'
-import { getTodayString } from '@/lib/dateUtils'
+import { getTodayString, getTodayFormattedString } from '@/lib/dateUtils'
 import Toast from '@/components/Toast'
-import { Task, ChildStatus } from '@/types/task'
+import { Task } from '@/types/task'
 import { taskAPI } from '@/lib/api'
+import { Timestamp } from 'firebase/firestore'
 
 type TaskData = {
   [dateStr: string]: { total: number; completed: number }
@@ -52,7 +53,7 @@ function TaskItem({
   }
 
   return (
-    <div className="bg-white p-4 rounded-lg border shadow-sm">
+    <div className="bg-white p-2 rounded-lg border shadow-sm">
       <div className="flex items-start gap-3">
         <label className="flex items-center gap-2 min-w-0 flex-1">
           <input
@@ -68,7 +69,8 @@ function TaskItem({
             {task.title}
           </span>
         </label>
-        {canEdit && (
+        {/* 個別のタスクを保存するボタンは一旦コメントアウトしています */}
+        {/* {canEdit && (
           <button
             onClick={handleSave}
             disabled={loading}
@@ -76,7 +78,7 @@ function TaskItem({
           >
             {loading ? '保存中...' : '保存'}
           </button>
-        )}
+        )} */}
       </div>
 
       {canEdit && (
@@ -86,7 +88,7 @@ function TaskItem({
             onChange={(e) => setComment(e.target.value)}
             placeholder="コメントを入力（任意）"
             disabled={loading}
-            className="w-full border rounded p-2 text-sm resize-none h-20"
+            className="w-full border rounded p-2 text-sm resize-none h-10"
           />
         </div>
       )}
@@ -228,7 +230,9 @@ export default function CalendarPage() {
         [userInfo.id]: {
           isCompleted,
           comment,
-          completedAt: isCompleted ? new Date() : undefined,
+          ...(isCompleted && {
+            completedAt: Timestamp.fromDate(new Date()),
+          }),
         },
       }
 
@@ -258,6 +262,52 @@ export default function CalendarPage() {
     }
   }
 
+  // 表示されている全てのタスクの完了状態とコメントを更新する関数
+  const updateAllTasks = async () => {
+    if (!userInfo || userInfo.role !== 'child') {
+      setToastType('error')
+      setToastMessage('タスクの一括更新権限がありません')
+      return
+    }
+    setLoading(true)
+    try {
+      const updatedTasks = todayTasks.map((task) => {
+        const currentStatus = task.childrenStatus?.[userInfo.id] || {
+          isCompleted: false,
+          comment: '',
+        }
+        return {
+          ...task,
+          childrenStatus: {
+            ...task.childrenStatus,
+            [userInfo.id]: {
+              isCompleted: currentStatus.isCompleted,
+              comment: currentStatus.comment,
+              ...(currentStatus.isCompleted && {
+                completedAt: Timestamp.fromDate(new Date()),
+              }),
+            },
+          },
+        }
+      })
+      await Promise.all(
+        updatedTasks.map((task) =>
+          taskAPI.update(task.id, { childrenStatus: task.childrenStatus })
+        )
+      )
+      // ローカルstateを更新
+      setTodayTasks(updatedTasks)
+      setToastType('success')
+      setToastMessage('全てのタスクを更新しました')
+    } catch (error) {
+      console.error('一括更新エラー:', error)
+      setToastType('error')
+      setToastMessage('タスクの一括更新に失敗しました')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <RoleGuard allowedRoles={['parent', 'child']}>
       {toastMessage && (
@@ -267,14 +317,9 @@ export default function CalendarPage() {
           onClose={() => setToastMessage(null)}
         />
       )}
-      <main className="p-4">
-        <h1 className="text-2xl font-bold mb-4">カレンダー表示</h1>
-
-        {/* 本日のタスクセクション */}
+      <main className="p-2">
+        <h1 className="text-2xl font-bold mb-4">{getTodayFormattedString()}</h1>
         <div className="mb-6 p-4 bg-blue-50 rounded-lg border">
-          <h2 className="text-xl font-bold mb-4 text-blue-800">
-            今日のタスク ({getTodayString()})
-          </h2>
           {todayTasks.length > 0 ? (
             <div className="space-y-3">
               {todayTasks.map((task) => (
@@ -287,6 +332,14 @@ export default function CalendarPage() {
                   currentUserId={userInfo?.id}
                 />
               ))}
+
+              <button
+                onClick={updateAllTasks}
+                disabled={loading}
+                className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 disabled:opacity-50"
+              >
+                {loading ? '保存中...' : '保存する'}
+              </button>
             </div>
           ) : (
             <p className="text-gray-600">今日のタスクはありません</p>

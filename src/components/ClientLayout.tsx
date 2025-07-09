@@ -28,7 +28,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthGuard>
       <Navigation />
-      <main className="p-4">{children}</main>
+      {children}
     </AuthGuard>
   )
 }

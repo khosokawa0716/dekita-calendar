@@ -1,9 +1,11 @@
 // タスク関連の型定義
 
+import { Timestamp } from 'firebase/firestore'
+
 export interface ChildStatus {
   isCompleted: boolean
   comment: string
-  completedAt?: Date
+  completedAt?: Timestamp
 }
 
 export interface Task {
