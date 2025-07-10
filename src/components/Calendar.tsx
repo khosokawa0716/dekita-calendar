@@ -193,19 +193,25 @@ export default function Calendar({ taskData = {} }: Props) {
   const renderDay = (day: Date, index: number) => {
     const dateKey = formatDate(day, 'yyyy-MM-dd') // taskDataのキーとして使用する日付文字列
     const isCurrentMonth = isSameMonth(day, monthStart) // 現在の月かどうかを判定
+    const isToday = dateKey === formatDate(new Date(), 'yyyy-MM-dd') // 今日の日付かどうかを判定
     const dayNumber = formatDate(day, 'd') // 表示する日の数字
 
     return (
       <div
         key={`${day.getTime()}-${index}`} // 一意なキーを生成
-        className={`border h-20 p-1 text-xs ${
-          isCurrentMonth ? 'bg-white' : 'bg-gray-100 text-gray-400' // 現在月とそれ以外で色を変える
-        }`}
+        className={`
+        relative border p-1 text-xs rounded-xl text-gray-400
+        ${isCurrentMonth ? 'bg-pink-50' : 'bg-gray-100'}
+        ${isToday ? 'border-2 border-yellow-400' : 'border-gray-200'}
+        h-12 flex flex-col items-center justify-start
+      `}
       >
-        <div className="font-bold">{dayNumber}</div>
+        <div className="absolute top-0 left-1 font-bold text-sm z-1">
+          {dayNumber}
+        </div>
         {/* この日付にタスクデータがある場合は完了状況を表示 */}
         {taskData[dateKey] && (
-          <div className="w-[100%] h-[60px] flex items-center justify-center">
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[100%] h-[60px] flex items-center justify-center">
             {/* 今日タスクが1つも完了していない場合には、画像ではなく薄い青の背景のマスにする */}
             {taskData[dateKey].completed === 0 &&
             dateKey === formatDate(new Date(), 'yyyy-MM-dd') ? (
@@ -232,23 +238,23 @@ export default function Calendar({ taskData = {} }: Props) {
       <div className="flex items-center justify-between mb-2">
         <button
           onClick={goToPreviousMonth}
-          className="text-sm text-blue-500 hover:underline"
+          className="text-sm text-blue-400 hover:underline"
         >
           ◀ 前の月
         </button>
-        <div className="text-xl font-bold">
+        <div className="text-xl font-semibold text-gray-500">
           {formatDate(currentDate, 'yyyy年MM月')}
         </div>
         <button
           onClick={goToNextMonth}
-          className="text-sm text-blue-500 hover:underline"
+          className="text-sm text-blue-400 hover:underline"
         >
           次の月 ▶
         </button>
       </div>
 
       {/* 曜日のヘッダー */}
-      <div className="grid grid-cols-7 text-center font-semibold">
+      <div className="grid grid-cols-7 text-center font-semibold text-gray-500">
         {['日', '月', '火', '水', '木', '金', '土'].map((dayName) => (
           <div key={dayName}>{dayName}</div>
         ))}
