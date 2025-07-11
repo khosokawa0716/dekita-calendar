@@ -220,6 +220,8 @@ export default function Calendar({ taskData = {} }: Props) {
             ) : (
               // タスクの完了状況に応じて画像を表示
               <Image
+                width={50}
+                height={50}
                 src={getTaskStateImagePath(
                   taskData[dateKey].total,
                   taskData[dateKey].completed
