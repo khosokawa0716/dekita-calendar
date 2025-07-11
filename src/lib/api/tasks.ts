@@ -9,6 +9,8 @@ import {
   updateDoc,
   getDoc,
   serverTimestamp,
+  type UpdateData,
+  type DocumentData,
 } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import type { Task, CreateTaskInput, UpdateTaskInput } from '@/types/task'
@@ -101,7 +103,7 @@ export const taskAPI = {
   update: async (id: string, updates: UpdateTaskInput): Promise<void> => {
     try {
       const docRef = doc(db, 'tasks', id)
-      await updateDoc(docRef, updates as { [x: string]: any })
+      await updateDoc(docRef, updates as UpdateData<DocumentData>)
     } catch (error) {
       console.error('タスク更新エラー:', error)
       throw new Error('タスクの更新に失敗しました')

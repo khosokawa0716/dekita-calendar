@@ -1,7 +1,6 @@
-// components/Toast.tsx
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 
 type Props = {
   message: string

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 
 /**
  * カレンダーコンポーネントのProps型定義
@@ -218,7 +219,7 @@ export default function Calendar({ taskData = {} }: Props) {
               <div className="w-[70%] h-full bg-blue-100 rounded-lg flex items-center justify-center"></div>
             ) : (
               // タスクの完了状況に応じて画像を表示
-              <img
+              <Image
                 src={getTaskStateImagePath(
                   taskData[dateKey].total,
                   taskData[dateKey].completed

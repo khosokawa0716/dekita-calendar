@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useUserInfo } from '@/hooks/useUserInfo'
 import Calendar from '@/components/Calendar'
 import { RoleGuard } from '@/components/RoleGuard'
-import { getTodayString, getTodayFormattedString } from '@/lib/dateUtils'
+import { getTodayString } from '@/lib/dateUtils'
 import Toast from '@/components/Toast'
 import { Task } from '@/types/task'
 import { taskAPI } from '@/lib/api'
@@ -17,7 +17,6 @@ type TaskData = {
 // 個別のタスクアイテムコンポーネント
 function TaskItem({
   task,
-  onUpdate,
   canEdit,
   loading,
   currentUserId,
@@ -47,10 +46,6 @@ function TaskItem({
   const userStatus = getUserStatus()
   const [isCompleted, setIsCompleted] = useState(userStatus.isCompleted)
   const [comment, setComment] = useState(userStatus.comment)
-
-  const handleSave = () => {
-    onUpdate(task.id, isCompleted, comment)
-  }
 
   return (
     <div className="bg-white p-2 rounded-lg border shadow-sm">
@@ -318,7 +313,6 @@ export default function CalendarPage() {
         />
       )}
       <main className="p-2">
-        <h1 className="text-2xl font-bold mb-4">{getTodayFormattedString()}</h1>
         <div className="mb-6 p-4 bg-blue-50 rounded-lg border">
           {todayTasks.length > 0 ? (
             <div className="space-y-3">

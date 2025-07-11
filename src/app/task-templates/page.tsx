@@ -61,12 +61,6 @@ export default function TaskTemplateListPage() {
 
   if (loading) return <p>読み込み中...</p>
 
-  // 子どもの名前を取得するヘルパー関数
-  const getChildName = (childId: string) => {
-    const child = children.find((c) => c.id === childId)
-    return child ? child.displayName : 'Unknown'
-  }
-
   const handleGenerateTodayTasks = async () => {
     if (!userInfo) {
       console.log('userInfo が未取得のため中断')
