@@ -99,6 +99,7 @@ export default function TaskTemplateEditPage() {
           <label className="font-semibold block mb-1">繰り返し設定</label>
           <select
             value={repeatType}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             onChange={(e) => setRepeatType(e.target.value as any)}
             className="border px-2 py-1 rounded"
           >

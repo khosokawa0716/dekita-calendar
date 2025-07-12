@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useAuthRedirect } from '@/hooks/useAuthRedirect'
 import { getTodayString } from '@/lib/dateUtils'
 import Link from 'next/link'
@@ -9,6 +9,7 @@ import { Task } from '@/types/task'
 import { useFamilyChildren } from '@/hooks/useFamilyChildren'
 import { taskAPI, achievementAPI } from '@/lib/api'
 import { useUserInfo } from '@/hooks/useUserInfo'
+import { Timestamp } from 'firebase/firestore'
 
 export default function TaskListPage() {
   useAuthRedirect()
@@ -16,7 +17,7 @@ export default function TaskListPage() {
   const { children } = useFamilyChildren(userInfo?.familyId)
   const [tasks, setTasks] = useState<Task[]>([])
 
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     if (!userInfo) return
 
     try {
@@ -29,7 +30,7 @@ export default function TaskListPage() {
     } catch (error) {
       console.error('タスク取得エラー:', error)
     }
-  }
+  }, [userInfo])
 
   const toggleCompleted = async (task: Task, childId: string) => {
     try {
@@ -41,7 +42,9 @@ export default function TaskListPage() {
         [childId]: {
           ...currentStatus,
           isCompleted: newCompleted,
-          completedAt: newCompleted ? new Date() : undefined,
+          completedAt: newCompleted
+            ? Timestamp.fromDate(new Date())
+            : undefined,
         },
       }
 
@@ -62,7 +65,7 @@ export default function TaskListPage() {
 
   useEffect(() => {
     fetchTasks()
-  }, [userInfo])
+  }, [userInfo, fetchTasks])
 
   // 子どもの名前を取得するヘルパー関数
   const getChildName = (childId: string) => {

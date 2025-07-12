@@ -80,6 +80,7 @@ export const userAPI = {
   ): Promise<void> => {
     try {
       const docRef = doc(db, 'users', id)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await updateDoc(docRef, updates as { [x: string]: any })
     } catch (error) {
       console.error('ユーザー更新エラー:', error)

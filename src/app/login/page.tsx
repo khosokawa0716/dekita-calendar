@@ -21,6 +21,7 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(auth, email, password)
       router.push('/') // ログイン後トップページに遷移
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('ログインエラー:', err)
       setError('メールアドレスまたはパスワードが正しくありません')

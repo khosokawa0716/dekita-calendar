@@ -122,6 +122,7 @@ export default function TaskTemplateListPage() {
         }
 
         // 全ての子どもに対してタスクを生成
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const initialChildrenStatus: { [childId: string]: any } = {}
         children.forEach((child) => {
           initialChildrenStatus[child.id] = {
@@ -177,6 +178,7 @@ export default function TaskTemplateListPage() {
 
     try {
       // 選択された子どもたちの初期状態を設定
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const initialChildrenStatus: { [childId: string]: any } = {}
       selectedChildren.forEach((childId) => {
         initialChildrenStatus[childId] = {

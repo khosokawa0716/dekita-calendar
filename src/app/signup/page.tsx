@@ -49,6 +49,7 @@ export default function SignupPage() {
       })
 
       setModalMessage('登録に成功しました！')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       setModalMessage(`登録に失敗しました: ${error.message}`)
     }

@@ -35,7 +35,7 @@ export interface TaskTemplate {
   title: string
   createdBy: string
   familyId: string
-  createdAt: any // Firestore Timestamp
+  createdAt: Timestamp // Firestore Timestamp
   repeatType: 'none' | 'everyday' | 'weekday' | 'custom'
   repeatDays?: number[]
 }

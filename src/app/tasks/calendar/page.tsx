@@ -160,6 +160,7 @@ export default function CalendarPage() {
         // 子どもの場合は、自分のIDで完了状態を確認
         if (userInfo.role === 'parent') {
           const allCompleted = Object.values(task.childrenStatus).every(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (status: any) => status.isCompleted
           )
           if (allCompleted) {

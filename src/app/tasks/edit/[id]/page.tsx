@@ -53,7 +53,7 @@ export default function TaskEditPage() {
       setLoading(false)
     }
     fetchTask()
-  }, [id])
+  }, [id, router])
 
   const handleUpdate = async () => {
     if (!id || typeof id !== 'string') return
