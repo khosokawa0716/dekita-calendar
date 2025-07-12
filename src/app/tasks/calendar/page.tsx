@@ -17,6 +17,7 @@ type TaskData = {
 // 個別のタスクアイテムコンポーネント
 function TaskItem({
   task,
+  onUpdate,
   canEdit,
   loading,
   currentUserId,
@@ -44,8 +45,6 @@ function TaskItem({
   }
 
   const userStatus = getUserStatus()
-  const [isCompleted, setIsCompleted] = useState(userStatus.isCompleted)
-  const [comment, setComment] = useState(userStatus.comment)
 
   return (
     <div className="bg-white p-2 rounded-lg border shadow-sm">
@@ -53,13 +52,15 @@ function TaskItem({
         <label className="flex items-center gap-2 min-w-0 flex-1">
           <input
             type="checkbox"
-            checked={isCompleted}
-            onChange={(e) => setIsCompleted(e.target.checked)}
+            checked={userStatus.isCompleted}
+            onChange={(e) =>
+              onUpdate(task.id, e.target.checked, userStatus.comment)
+            }
             disabled={!canEdit || loading}
             className="w-4 h-4"
           />
           <span
-            className={`font-medium ${isCompleted ? 'line-through text-gray-500' : 'text-gray-900'}`}
+            className={`font-medium ${userStatus.isCompleted ? 'line-through text-gray-500' : 'text-gray-900'}`}
           >
             {task.title}
           </span>
@@ -79,8 +80,10 @@ function TaskItem({
       {canEdit && (
         <div className="mt-3">
           <textarea
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
+            value={userStatus.comment || ''}
+            onChange={(e) => {
+              onUpdate(task.id, userStatus.isCompleted, e.target.value)
+            }}
             placeholder="コメントを入力（任意）"
             disabled={loading}
             className="w-full border rounded p-2 text-sm resize-none h-10"
@@ -231,8 +234,6 @@ export default function CalendarPage() {
           }),
         },
       }
-
-      await taskAPI.update(taskId, { childrenStatus: updatedChildrenStatus })
 
       // ローカルstateを更新
       setTodayTasks((prev) =>
