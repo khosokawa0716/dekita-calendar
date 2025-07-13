@@ -16,7 +16,7 @@ export function Navigation() {
   }
 
   return (
-    <nav className="p-4 bg-gray-100 flex gap-4">
+    <nav className="p-4 bg-gray-100 flex gap-4 text-xs">
       {/* ログイン済みの場合のみ表示 */}
       {userInfo && (
         <>
