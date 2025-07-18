@@ -156,12 +156,11 @@ export default function CalendarPage() {
           data[date] = { total: 0, completed: 0 }
         }
 
-        data[date].total += 1
-
         // カレンダーに表示するためのタスクデータを構築
         // 親の場合は、全ての子どもが完了しているかを確認
         // 子どもの場合は、自分のIDで完了状態を確認
         if (userInfo.role === 'parent') {
+          data[date].total += 1
           const allCompleted = Object.values(task.childrenStatus).every(
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (status: any) => status.isCompleted
@@ -172,8 +171,12 @@ export default function CalendarPage() {
         } else if (userInfo.role === 'child') {
           // 子どもユーザーの場合は、自分のIDで完了状態を確認
           const childStatus = task.childrenStatus[userInfo.id]
-          if (childStatus && childStatus.isCompleted) {
-            data[date].completed += 1
+          if (childStatus) {
+            // 自分に割り当てられているタスクのみカウント
+            data[date].total += 1
+            if (childStatus.isCompleted) {
+              data[date].completed += 1
+            }
           }
         }
       })
