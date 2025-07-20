@@ -136,7 +136,10 @@ function getTaskStateImagePath(
   completedCount: number
 ): string {
   if (taskCount < 1 || completedCount < 0 || completedCount > taskCount) {
-    throw new Error('無効な引数です')
+    console.log(
+      `無効な引数: taskCount=${taskCount}, completedCount=${completedCount}`
+    )
+    // throw new Error('無効な引数です')
   }
 
   if (completedCount === taskCount) {
@@ -154,8 +157,8 @@ function getTaskStateImagePath(
       return taskStateImages[2] // some
     }
   }
-
-  throw new Error('条件に一致しません')
+  // taskCountは1以上を想定しているが、想定しない値が来た場合は空文字を返す
+  return ''
 }
 
 export default function Calendar({ taskData = {} }: Props) {
@@ -196,6 +199,7 @@ export default function Calendar({ taskData = {} }: Props) {
     const isCurrentMonth = isSameMonth(day, monthStart) // 現在の月かどうかを判定
     const isToday = dateKey === formatDate(new Date(), 'yyyy-MM-dd') // 今日の日付かどうかを判定
     const dayNumber = formatDate(day, 'd') // 表示する日の数字
+    const dateTask = taskData[dateKey] || null // 日付に対応するタスクデータを取得
 
     return (
       <div
@@ -211,25 +215,24 @@ export default function Calendar({ taskData = {} }: Props) {
           {dayNumber}
         </div>
         {/* この日付にタスクデータがある場合は完了状況を表示 */}
-        {taskData[dateKey] && (
+        {dateTask && (
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[100%] h-[60px] flex items-center justify-center">
             {/* 今日タスクが1つも完了していない場合には、画像ではなく薄い青の背景のマスにする */}
-            {taskData[dateKey].completed === 0 &&
-            dateKey === formatDate(new Date(), 'yyyy-MM-dd') ? (
+            {isToday && dateTask.completed === 0 ? (
               <div className="w-[70%] h-full bg-blue-100 rounded-lg flex items-center justify-center"></div>
-            ) : (
+            ) : dateTask.total > 1 ? (
               // タスクの完了状況に応じて画像を表示
               <Image
                 width={50}
                 height={50}
                 src={getTaskStateImagePath(
-                  taskData[dateKey].total,
-                  taskData[dateKey].completed
+                  dateTask.total,
+                  dateTask.completed
                 )}
                 alt="タスクの完了状況"
                 className="max-w-full max-h-full object-contain block rounded-lg shadow-sm"
               />
-            )}
+            ) : <></>}
           </div>
         )}
       </div>
