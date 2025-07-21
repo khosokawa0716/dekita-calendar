@@ -102,6 +102,7 @@ export const taskAPI = {
    */
   update: async (id: string, updates: UpdateTaskInput): Promise<void> => {
     try {
+      console.log('Updating task:', id, updates)
       const docRef = doc(db, 'tasks', id)
       await updateDoc(docRef, updates as UpdateData<DocumentData>)
     } catch (error) {
