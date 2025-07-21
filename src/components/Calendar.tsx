@@ -220,19 +220,18 @@ export default function Calendar({ taskData = {} }: Props) {
             {/* 今日タスクが1つも完了していない場合には、画像ではなく薄い青の背景のマスにする */}
             {isToday && dateTask.completed === 0 ? (
               <div className="w-[70%] h-full bg-blue-100 rounded-lg flex items-center justify-center"></div>
-            ) : dateTask.total > 1 ? (
+            ) : dateTask.total > 0 ? (
               // タスクの完了状況に応じて画像を表示
               <Image
                 width={50}
                 height={50}
-                src={getTaskStateImagePath(
-                  dateTask.total,
-                  dateTask.completed
-                )}
+                src={getTaskStateImagePath(dateTask.total, dateTask.completed)}
                 alt="タスクの完了状況"
                 className="max-w-full max-h-full object-contain block rounded-lg shadow-sm"
               />
-            ) : <></>}
+            ) : (
+              <></>
+            )}
           </div>
         )}
       </div>
