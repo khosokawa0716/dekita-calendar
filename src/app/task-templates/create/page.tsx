@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useUserInfo } from '@/hooks/useUserInfo'
 import { RoleGuard } from '@/components/RoleGuard'
+import Toast from '@/components/Toast'
 import { taskTemplateAPI } from '@/lib/api'
 
 export default function TaskTemplateCreatePage() {
@@ -15,6 +16,10 @@ export default function TaskTemplateCreatePage() {
   >('none')
   const [customDays, setCustomDays] = useState<number[]>([])
   const [loading, setLoading] = useState(false)
+  const [toast, setToast] = useState<{
+    message: string
+    type: 'success' | 'error'
+  } | null>(null)
 
   const toggleDay = (day: number) => {
     setCustomDays((prev) =>
@@ -28,12 +33,18 @@ export default function TaskTemplateCreatePage() {
     console.log('テンプレートタイトル:', title)
     if (!userInfo) return
     if (!title.trim()) {
-      alert('タイトルは必須です')
+      setToast({
+        message: 'タイトルは必須です',
+        type: 'error',
+      })
       return
     }
 
     if (repeatType === 'custom' && customDays.length === 0) {
-      alert('曜日を1つ以上選択してください')
+      setToast({
+        message: '曜日を1つ以上選択してください',
+        type: 'error',
+      })
       return
     }
 
@@ -47,11 +58,17 @@ export default function TaskTemplateCreatePage() {
         ...(repeatType === 'custom' ? { repeatDays: customDays } : {}),
       }
       await taskTemplateAPI.create(templateData)
-      alert('テンプレートを追加しました')
+      setToast({
+        message: 'テンプレートを追加しました',
+        type: 'success',
+      })
       router.push('/task-templates')
     } catch (error) {
       console.error('テンプレート追加エラー:', error)
-      alert('登録に失敗しました')
+      setToast({
+        message: '登録に失敗しました',
+        type: 'error',
+      })
     } finally {
       setLoading(false)
     }
@@ -60,6 +77,13 @@ export default function TaskTemplateCreatePage() {
   return (
     <RoleGuard allowedRoles={['parent']}>
       <main className="p-4">
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        )}
         <h1 className="text-2xl font-bold mb-4">テンプレート作成</h1>
         <input
           type="text"

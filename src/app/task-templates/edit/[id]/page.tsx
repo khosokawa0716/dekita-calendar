@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useUserInfo } from '@/hooks/useUserInfo'
 import { RoleGuard } from '@/components/RoleGuard'
+import Toast from '@/components/Toast'
 import { taskTemplateAPI } from '@/lib/api'
 
 const nextPage = '/task-templates'
@@ -21,6 +22,10 @@ export default function TaskTemplateEditPage() {
   >('none')
   const [repeatDays, setRepeatDays] = useState<number[]>([])
   const [templateLoaded, setTemplateLoaded] = useState(false)
+  const [toast, setToast] = useState<{
+    message: string
+    type: 'success' | 'error'
+  } | null>(null)
 
   const toggleDay = (day: number) => {
     setRepeatDays((prev) =>
@@ -42,13 +47,19 @@ export default function TaskTemplateEditPage() {
       const template = await taskTemplateAPI.getById(templateId)
       console.log('Fetched template:', template ? true : false, template)
       if (!template) {
-        alert('テンプレートが見つかりません')
+        setToast({
+          message: 'テンプレートが見つかりません',
+          type: 'error',
+        })
         router.push(nextPage)
         return
       }
       console.log('ユーザー情報:', userInfo, 'テンプレートID:', templateId)
       if (template.createdBy !== userInfo.id) {
-        alert('このテンプレートを編集する権限がありません')
+        setToast({
+          message: 'このテンプレートを編集する権限がありません',
+          type: 'error',
+        })
         router.push(nextPage)
         return
       }
@@ -64,7 +75,10 @@ export default function TaskTemplateEditPage() {
 
   const handleUpdate = async () => {
     if (!title.trim()) {
-      alert('タイトルを入力してください')
+      setToast({
+        message: 'タイトルを入力してください',
+        type: 'error',
+      })
       return
     }
 
@@ -74,11 +88,17 @@ export default function TaskTemplateEditPage() {
         repeatType,
         repeatDays: repeatType === 'custom' ? repeatDays : [],
       })
-      alert('テンプレートを更新しました')
+      setToast({
+        message: 'テンプレートを更新しました',
+        type: 'success',
+      })
       router.push(nextPage)
     } catch (error) {
       console.error('テンプレート更新エラー:', error)
-      alert('更新に失敗しました')
+      setToast({
+        message: '更新に失敗しました',
+        type: 'error',
+      })
     }
   }
 
@@ -87,6 +107,13 @@ export default function TaskTemplateEditPage() {
   return (
     <RoleGuard allowedRoles={['parent']}>
       <main className="p-4">
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        )}
         <h1 className="text-2xl font-bold mb-4">テンプレート編集</h1>
         <input
           type="text"
