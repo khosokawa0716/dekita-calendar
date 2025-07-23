@@ -9,11 +9,16 @@ import {
 } from 'firebase/auth'
 import { useState, useEffect } from 'react'
 import LogoutButton from '@/components/LogoutButton'
+import Toast from '@/components/Toast'
 import { RoleGuard } from '@/components/RoleGuard'
 import { userAPI } from '@/lib/api'
 
 export default function SettingsPage() {
   const { userInfo } = useUserInfo()
+  const [toast, setToast] = useState<{
+    message: string
+    type: 'success' | 'error'
+  } | null>(null)
   const [displayName, setDisplayName] = useState(userInfo?.displayName ?? '')
   const [familyId, setFamilyId] = useState(userInfo?.familyId ?? '')
 
@@ -21,10 +26,10 @@ export default function SettingsPage() {
     if (!userInfo) return
     try {
       await userAPI.update(userInfo.id, { displayName, familyId })
-      alert('設定を保存しました')
+      setToast({ message: '設定を保存しました', type: 'success' })
     } catch (error) {
       console.error('設定保存エラー:', error)
-      alert('保存に失敗しました')
+      setToast({ message: '保存に失敗しました', type: 'error' })
     }
   }
 
@@ -42,7 +47,11 @@ export default function SettingsPage() {
     if (!confirmed) return
 
     const email = auth.currentUser.email
-    if (!email) return alert('ログイン情報が不足しています')
+    if (!email)
+      return setToast({
+        message: 'ログイン情報が不足しています',
+        type: 'error',
+      })
 
     const password = window.prompt('確認のため、パスワードを再入力してください')
     if (!password) return
@@ -59,17 +68,24 @@ export default function SettingsPage() {
       // Firebase Authから削除
       await deleteUser(auth.currentUser)
 
-      alert('アカウントを削除しました')
+      setToast({ message: 'アカウントを削除しました', type: 'success' })
       location.href = '/login'
     } catch (error) {
       console.error('アカウント削除エラー:', error)
-      alert('削除に失敗しました')
+      setToast({ message: '削除に失敗しました', type: 'error' })
     }
   }
 
   return (
     <RoleGuard allowedRoles={['parent', 'child']}>
       <main className="p-4">
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        )}
         <h1 className="text-xl font-bold mb-4">アカウント設定</h1>
 
         <label className="block mb-2">
