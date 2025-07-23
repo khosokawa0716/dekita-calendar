@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { auth } from '@/lib/firebase'
 import { onAuthStateChanged } from 'firebase/auth'
 import { RoleGuard } from '@/components/RoleGuard'
+import Toast from '@/components/Toast'
 import { taskAPI } from '@/lib/api'
 
 export default function TaskEditPage() {
@@ -12,6 +13,10 @@ export default function TaskEditPage() {
   const router = useRouter()
   const [title, setTitle] = useState('')
   const [loading, setLoading] = useState(true)
+  const [toast, setToast] = useState<{
+    message: string
+    type: 'success' | 'error'
+  } | null>(null)
 
   useEffect(() => {
     const fetchTask = async () => {
@@ -27,7 +32,10 @@ export default function TaskEditPage() {
         const task = await taskAPI.getById(id)
 
         if (!task) {
-          alert('タスクが見つかりません')
+          setToast({
+            message: 'タスクが見つかりません',
+            type: 'error',
+          })
           router.push('/tasks')
           return
         }
@@ -37,7 +45,10 @@ export default function TaskEditPage() {
         console.log('タスクID:', id)
         console.log('createBy:', task.createdBy)
         if (task.createdBy !== user.uid) {
-          alert('このタスクを編集する権限がありません')
+          setToast({
+            message: 'このタスクを編集する権限がありません',
+            type: 'error',
+          })
           router.push('/tasks')
           return
         }
@@ -66,6 +77,13 @@ export default function TaskEditPage() {
   return (
     <RoleGuard allowedRoles={['parent']}>
       <main className="p-4">
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        )}
         <h1 className="text-2xl font-bold mb-4">タスク編集</h1>
         <input
           type="text"

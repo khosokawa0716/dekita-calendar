@@ -6,6 +6,7 @@ import { useFamilyChildren } from '@/hooks/useFamilyChildren'
 import Link from 'next/link'
 import { getTodayString } from '@/lib/dateUtils'
 import { RoleGuard } from '@/components/RoleGuard'
+import Toast from '@/components/Toast'
 import { taskTemplateAPI, taskAPI } from '@/lib/api'
 import type { TaskTemplate } from '@/types/task'
 
@@ -35,6 +36,10 @@ export default function TaskTemplateListPage() {
     null
   )
   const [selectedChildren, setSelectedChildren] = useState<string[]>([])
+  const [toast, setToast] = useState<{
+    message: string
+    type: 'success' | 'error'
+  } | null>(null)
 
   const toggleChildSelection = (childId: string) => {
     setSelectedChildren((prev) =>
@@ -68,7 +73,11 @@ export default function TaskTemplateListPage() {
     }
 
     if (children.length === 0) {
-      alert('家族に子どもが登録されていません。まず子どもを登録してください。')
+      setToast({
+        message:
+          '家族に子どもが登録されていません。まず子どもを登録してください。',
+        type: 'error',
+      })
       return
     }
 
@@ -146,10 +155,13 @@ export default function TaskTemplateListPage() {
         createdTasksCount++
       }
 
-      alert(`本日のタスクを${createdTasksCount}個生成しました🐸`)
+      setToast({
+        message: `本日のタスクを${createdTasksCount}個生成しました🐸`,
+        type: 'success',
+      })
     } catch (error) {
       console.error('タスク生成エラー:', error)
-      alert('生成に失敗しました')
+      setToast({ message: '生成に失敗しました', type: 'error' })
     }
   }
 
@@ -157,7 +169,10 @@ export default function TaskTemplateListPage() {
     if (!userInfo) return
 
     if (children.length === 0) {
-      alert('家族に子どもが登録されていません。')
+      setToast({
+        message: '家族に子どもが登録されていません。',
+        type: 'error',
+      })
       return
     }
 
@@ -169,7 +184,10 @@ export default function TaskTemplateListPage() {
 
   const executeAddTask = async () => {
     if (!selectedTemplate || !userInfo || selectedChildren.length === 0) {
-      alert('タスクを割り当てる子どもを選択してください')
+      setToast({
+        message: 'タスクを割り当てる子どもを選択してください',
+        type: 'error',
+      })
       return
     }
 
@@ -196,15 +214,16 @@ export default function TaskTemplateListPage() {
         familyId: userInfo.familyId,
       })
 
-      alert(
-        `${selectedChildren.length}人の子どもに「${selectedTemplate.title}」を割り当てました`
-      )
+      setToast({
+        message: `${selectedChildren.length}人の子どもに「${selectedTemplate.title}」を割り当てました`,
+        type: 'success',
+      })
       setShowChildSelection(false)
       setSelectedTemplate(null)
       setSelectedChildren([])
     } catch (error) {
       console.error('タスク追加エラー:', error)
-      alert('追加に失敗しました')
+      setToast({ message: '追加に失敗しました', type: 'error' })
     }
   }
 
@@ -214,18 +233,25 @@ export default function TaskTemplateListPage() {
 
     try {
       await taskTemplateAPI.delete(id)
-      alert('テンプレートを削除しました')
+      setToast({ message: 'テンプレートを削除しました', type: 'success' })
       // 一覧の再取得 or ローカルstateから削除
       setTemplates((prev) => prev.filter((t) => t.id !== id))
     } catch (error) {
       console.error('テンプレート削除エラー:', error)
-      alert('削除に失敗しました')
+      setToast({ message: '削除に失敗しました', type: 'error' })
     }
   }
 
   return (
     <RoleGuard allowedRoles={['parent']}>
       <main className="p-4">
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        )}
         <h1 className="text-2xl font-bold mb-4">テンプレート一覧</h1>
         <button
           onClick={handleGenerateTodayTasks}

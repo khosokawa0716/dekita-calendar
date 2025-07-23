@@ -6,6 +6,7 @@ import { useAuthRedirect } from '@/hooks/useAuthRedirect'
 import { useUserInfo } from '@/hooks/useUserInfo'
 import { useFamilyChildren } from '@/hooks/useFamilyChildren'
 import { RoleGuard } from '@/components/RoleGuard'
+import Toast from '@/components/Toast'
 import { taskAPI } from '@/lib/api'
 
 export default function TaskAddPage() {
@@ -17,6 +18,10 @@ export default function TaskAddPage() {
 
   const [newTitle, setNewTitle] = useState('')
   const [selectedChildren, setSelectedChildren] = useState<string[]>([])
+  const [toast, setToast] = useState<{
+    message: string
+    type: 'success' | 'error'
+  } | null>(null)
 
   if (!userInfo) return <div>Loading...</div>
 
@@ -31,7 +36,10 @@ export default function TaskAddPage() {
   const addTask = async () => {
     if (newTitle.trim() === '') return
     if (selectedChildren.length === 0) {
-      alert('タスクを割り当てる子どもを選択してください')
+      setToast({
+        message: 'タスクを割り当てる子どもを選択してください',
+        type: 'error',
+      })
       return
     }
 
@@ -57,18 +65,31 @@ export default function TaskAddPage() {
         familyId: userInfo.familyId,
       }
       await taskAPI.create(taskData)
-      alert('タスクを登録しました')
+      setToast({
+        message: 'タスクを登録しました',
+        type: 'success',
+      })
       setNewTitle('')
       setSelectedChildren([])
     } catch (error) {
       console.error('タスクの追加エラー:', error)
-      alert('登録に失敗しました')
+      setToast({
+        message: '登録に失敗しました',
+        type: 'error',
+      })
     }
   }
 
   return (
     <RoleGuard allowedRoles={['parent']}>
       <main className="p-4">
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        )}
         <h1 className="text-2xl font-bold mb-4">タスクを登録する</h1>
 
         <div className="space-y-4">
