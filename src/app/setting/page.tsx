@@ -107,12 +107,47 @@ export default function SettingsPage() {
 
         <label className="block mb-4">
           ファミリーID:
-          <input
-            type="text"
-            value={familyId}
-            onChange={(e) => setFamilyId(e.target.value)}
-            className="border px-2 py-1 w-full"
-          />
+          {userInfo?.role === 'parent' ? (
+            <>
+              <div className="flex gap-2 mb-2">
+                <button
+                  className="bg-green-500 text-white px-2 py-1 rounded"
+                  onClick={() => {
+                    const newId = crypto.randomUUID()
+                    setFamilyId(newId)
+                    setToast({
+                      message: '新しいファミリーIDを生成しました',
+                      type: 'success',
+                    })
+                  }}
+                >
+                  新規生成
+                </button>
+                <button
+                  className="bg-gray-500 text-white px-2 py-1 rounded"
+                  onClick={() => setFamilyId('')}
+                >
+                  既存ID入力
+                </button>
+              </div>
+              <input
+                type="text"
+                value={familyId}
+                onChange={(e) => setFamilyId(e.target.value)}
+                className="border px-2 py-1 w-full"
+                placeholder="新規生成または既存IDを入力"
+                readOnly={!!familyId && familyId.length === 36} // 生成時はreadonly
+              />
+            </>
+          ) : (
+            <input
+              type="text"
+              value={familyId}
+              onChange={(e) => setFamilyId(e.target.value)}
+              className="border px-2 py-1 w-full"
+              placeholder="親から受け取ったIDを入力"
+            />
+          )}
         </label>
 
         <div className="flex flex-col sm:flex-row gap-2 mt-6">
