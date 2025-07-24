@@ -15,17 +15,46 @@ import { userAPI } from '@/lib/api'
 
 export default function SettingsPage() {
   const { userInfo } = useUserInfo()
+  const [isCreatingFamilyId, setIsCreatingFamilyId] = useState(false)
   const [toast, setToast] = useState<{
     message: string
-    type: 'success' | 'error'
+    type: 'success' | 'error' | 'info'
   } | null>(null)
   const [displayName, setDisplayName] = useState(userInfo?.displayName ?? '')
   const [familyId, setFamilyId] = useState(userInfo?.familyId ?? '')
 
+  // 新規生成ボタン
+  const handleGenerateFamilyId = () => {
+    const newId = crypto.randomUUID()
+    setFamilyId(newId)
+    setIsCreatingFamilyId(true)
+    setToast({
+      message: '新しいファミリーIDを生成しました',
+      type: 'success',
+    })
+  }
+  // 既存ID入力ボタン
+  const handleExistingFamilyId = () => {
+    setFamilyId('')
+    setIsCreatingFamilyId(false)
+    setToast({
+      message: '既存のファミリーIDを入力モードに切り替えました',
+      type: 'info',
+    })
+  }
+
   const handleSubmit = async () => {
     if (!userInfo) return
     try {
-      await userAPI.update(userInfo.id, { displayName, familyId })
+      // 親の場合のみisCreatingFamilyIdを渡す
+      if (userInfo.role === 'parent') {
+        await userAPI.update(userInfo.id, isCreatingFamilyId, {
+          displayName,
+          familyId,
+        })
+      } else {
+        await userAPI.update(userInfo.id, false, { displayName, familyId })
+      }
       setToast({ message: '設定を保存しました', type: 'success' })
     } catch (error) {
       console.error('設定保存エラー:', error)
@@ -112,20 +141,13 @@ export default function SettingsPage() {
               <div className="flex gap-2 mb-2">
                 <button
                   className="bg-green-500 text-white px-2 py-1 rounded"
-                  onClick={() => {
-                    const newId = crypto.randomUUID()
-                    setFamilyId(newId)
-                    setToast({
-                      message: '新しいファミリーIDを生成しました',
-                      type: 'success',
-                    })
-                  }}
+                  onClick={handleGenerateFamilyId}
                 >
                   新規生成
                 </button>
                 <button
                   className="bg-gray-500 text-white px-2 py-1 rounded"
-                  onClick={() => setFamilyId('')}
+                  onClick={handleExistingFamilyId}
                 >
                   既存ID入力
                 </button>
