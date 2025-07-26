@@ -151,6 +151,20 @@ export default function SettingsPage() {
                 >
                   既存ID入力
                 </button>
+                <button
+                  className="bg-blue-500 text-white px-2 py-1 rounded"
+                  onClick={async () => {
+                    if (!familyId) return
+                    await navigator.clipboard.writeText(familyId)
+                    setToast({
+                      message: 'ファミリーIDをコピーしました',
+                      type: 'success',
+                    })
+                  }}
+                  disabled={!familyId}
+                >
+                  コピー
+                </button>
               </div>
               <input
                 type="text"
