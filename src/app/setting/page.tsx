@@ -15,17 +15,46 @@ import { userAPI } from '@/lib/api'
 
 export default function SettingsPage() {
   const { userInfo } = useUserInfo()
+  const [isCreatingFamilyId, setIsCreatingFamilyId] = useState(false)
   const [toast, setToast] = useState<{
     message: string
-    type: 'success' | 'error'
+    type: 'success' | 'error' | 'info'
   } | null>(null)
   const [displayName, setDisplayName] = useState(userInfo?.displayName ?? '')
   const [familyId, setFamilyId] = useState(userInfo?.familyId ?? '')
 
+  // 新規生成ボタン
+  const handleGenerateFamilyId = () => {
+    const newId = crypto.randomUUID()
+    setFamilyId(newId)
+    setIsCreatingFamilyId(true)
+    setToast({
+      message: '新しいファミリーIDを生成しました',
+      type: 'success',
+    })
+  }
+  // 既存ID入力ボタン
+  const handleExistingFamilyId = () => {
+    setFamilyId('')
+    setIsCreatingFamilyId(false)
+    setToast({
+      message: '既存のファミリーIDを入力モードに切り替えました',
+      type: 'info',
+    })
+  }
+
   const handleSubmit = async () => {
     if (!userInfo) return
     try {
-      await userAPI.update(userInfo.id, { displayName, familyId })
+      // 親の場合のみisCreatingFamilyIdを渡す
+      if (userInfo.role === 'parent') {
+        await userAPI.update(userInfo.id, isCreatingFamilyId, {
+          displayName,
+          familyId,
+        })
+      } else {
+        await userAPI.update(userInfo.id, false, { displayName, familyId })
+      }
       setToast({ message: '設定を保存しました', type: 'success' })
     } catch (error) {
       console.error('設定保存エラー:', error)
@@ -107,12 +136,54 @@ export default function SettingsPage() {
 
         <label className="block mb-4">
           ファミリーID:
-          <input
-            type="text"
-            value={familyId}
-            onChange={(e) => setFamilyId(e.target.value)}
-            className="border px-2 py-1 w-full"
-          />
+          {userInfo?.role === 'parent' ? (
+            <>
+              <div className="flex gap-2 mb-2">
+                <button
+                  className="bg-green-500 text-white px-2 py-1 rounded"
+                  onClick={handleGenerateFamilyId}
+                >
+                  新規生成
+                </button>
+                <button
+                  className="bg-gray-500 text-white px-2 py-1 rounded"
+                  onClick={handleExistingFamilyId}
+                >
+                  既存ID入力
+                </button>
+                <button
+                  className="bg-blue-500 text-white px-2 py-1 rounded"
+                  onClick={async () => {
+                    if (!familyId) return
+                    await navigator.clipboard.writeText(familyId)
+                    setToast({
+                      message: 'ファミリーIDをコピーしました',
+                      type: 'success',
+                    })
+                  }}
+                  disabled={!familyId}
+                >
+                  コピー
+                </button>
+              </div>
+              <input
+                type="text"
+                value={familyId}
+                onChange={(e) => setFamilyId(e.target.value)}
+                className="border px-2 py-1 w-full"
+                placeholder="新規生成または既存IDを入力"
+                readOnly={!!familyId && familyId.length === 36} // 生成時はreadonly
+              />
+            </>
+          ) : (
+            <input
+              type="text"
+              value={familyId}
+              onChange={(e) => setFamilyId(e.target.value)}
+              className="border px-2 py-1 w-full"
+              placeholder="親から受け取ったIDを入力"
+            />
+          )}
         </label>
 
         <div className="flex flex-col sm:flex-row gap-2 mt-6">

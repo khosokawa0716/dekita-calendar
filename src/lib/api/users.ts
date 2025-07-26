@@ -13,6 +13,17 @@ import {
 import { db } from '@/lib/firebase'
 import type { User } from '@/types/task'
 
+// familyIdの重複チェック
+async function isFamilyIdUnique(
+  familyId: string,
+  userId?: string
+): Promise<boolean> {
+  const q = query(collection(db, 'users'), where('familyId', '==', familyId))
+  const snapshot = await getDocs(q)
+  // 自分自身以外でfamilyIdが使われていればfalse
+  return snapshot.docs.every((doc) => doc.id === userId)
+}
+
 export const userAPI = {
   /**
    * ユーザーを作成
@@ -76,9 +87,39 @@ export const userAPI = {
    */
   update: async (
     id: string,
+    isCreatingFamilyId: boolean,
     updates: Partial<Omit<User, 'id'>>
   ): Promise<void> => {
     try {
+      // ユーザー情報取得
+      const user = await userAPI.getById(id)
+      if (!user) throw new Error('ユーザー情報が取得できません')
+
+      // 親の場合で、isCreatingFamilyIdがtrueの時のみ重複チェック
+      if (
+        updates.familyId &&
+        user.role === 'parent' &&
+        isCreatingFamilyId &&
+        !(await isFamilyIdUnique(updates.familyId, id))
+      ) {
+        throw new Error('familyIdは既に使用されています')
+      }
+
+      // 子の場合または、親でisCreatingFamilyIdがfalseの時はfamilyIdの存在チェック
+      if (
+        updates.familyId &&
+        ((user.role === 'parent' && !isCreatingFamilyId) ||
+          user.role === 'child')
+      ) {
+        const q = query(
+          collection(db, 'users'),
+          where('familyId', '==', updates.familyId)
+        )
+        const snapshot = await getDocs(q)
+        if (snapshot.empty) {
+          throw new Error('familyIdが存在しません')
+        }
+      }
       const docRef = doc(db, 'users', id)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await updateDoc(docRef, updates as { [x: string]: any })
