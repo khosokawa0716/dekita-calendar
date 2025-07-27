@@ -26,6 +26,15 @@ export default function SettingsPage() {
   // 新規生成ボタン
   const handleGenerateFamilyId = () => {
     const newId = crypto.randomUUID()
+    // crypto.randomUUID()が機能しなかった場合のフォールバック
+    // 最新のブラウザではcrypto.randomUUID()がサポートされているが、古いブラウザではサポートされていない可能性がある
+    if (!newId || !isValidFamilyId(newId)) {
+      setToast({
+        message: 'ファミリーIDの生成に失敗しました',
+        type: 'error',
+      })
+      return
+    }
     setFamilyId(newId)
     setIsCreatingFamilyId(true)
     setToast({
@@ -33,6 +42,14 @@ export default function SettingsPage() {
       type: 'success',
     })
   }
+
+  // randomUUIDで生成された文字列が正しいかどうかをチェック
+  const isValidFamilyId = (id: string) => {
+    const regex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    return regex.test(id)
+  }
+
   // 既存ID入力ボタン
   const handleExistingFamilyId = () => {
     setFamilyId('')
@@ -172,7 +189,7 @@ export default function SettingsPage() {
                 onChange={(e) => setFamilyId(e.target.value)}
                 className="border px-2 py-1 w-full"
                 placeholder="新規生成または既存IDを入力"
-                readOnly={!!familyId && familyId.length === 36} // 生成時はreadonly
+                readOnly={!!familyId && isValidFamilyId(familyId)} // 生成時はreadonly
               />
             </>
           ) : (

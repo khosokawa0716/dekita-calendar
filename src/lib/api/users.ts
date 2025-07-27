@@ -20,8 +20,11 @@ async function isFamilyIdUnique(
 ): Promise<boolean> {
   const q = query(collection(db, 'users'), where('familyId', '==', familyId))
   const snapshot = await getDocs(q)
-  // 自分自身以外でfamilyIdが使われていればfalse
-  return snapshot.docs.every((doc) => doc.id === userId)
+  // userIdが指定されている場合は、自分自身以外でfamilyIdが使われていればfalse（重複あり）
+  // userIdが指定されていない場合は、familyIdが使われていなければtrue（重複なし）
+  return userId
+    ? snapshot.docs.every((doc) => doc.id === userId)
+    : snapshot.empty
 }
 
 export const userAPI = {
