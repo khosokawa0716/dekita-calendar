@@ -27,6 +27,41 @@ async function isFamilyIdUnique(
     : snapshot.empty
 }
 
+/**
+ * familyIdの更新時バリデーション
+ */
+async function validateFamilyIdForUpdate(
+  user: User,
+  id: string,
+  updates: Partial<Omit<User, 'id'>>,
+  isCreatingFamilyId: boolean
+): Promise<void> {
+  // 親の場合で、isCreatingFamilyIdがtrueの時のみ重複チェック
+  if (
+    updates.familyId &&
+    user.role === 'parent' &&
+    isCreatingFamilyId &&
+    !(await isFamilyIdUnique(updates.familyId, id))
+  ) {
+    throw new Error('familyIdは既に使用されています')
+  }
+
+  // 子の場合または、親でisCreatingFamilyIdがfalseの時はfamilyIdの存在チェック
+  if (
+    updates.familyId &&
+    ((user.role === 'parent' && !isCreatingFamilyId) || user.role === 'child')
+  ) {
+    const q = query(
+      collection(db, 'users'),
+      where('familyId', '==', updates.familyId)
+    )
+    const snapshot = await getDocs(q)
+    if (snapshot.empty) {
+      throw new Error('familyIdが存在しません')
+    }
+  }
+}
+
 export const userAPI = {
   /**
    * ユーザーを作成
@@ -97,32 +132,8 @@ export const userAPI = {
       // ユーザー情報取得
       const user = await userAPI.getById(id)
       if (!user) throw new Error('ユーザー情報が取得できません')
-
-      // 親の場合で、isCreatingFamilyIdがtrueの時のみ重複チェック
-      if (
-        updates.familyId &&
-        user.role === 'parent' &&
-        isCreatingFamilyId &&
-        !(await isFamilyIdUnique(updates.familyId, id))
-      ) {
-        throw new Error('familyIdは既に使用されています')
-      }
-
-      // 子の場合または、親でisCreatingFamilyIdがfalseの時はfamilyIdの存在チェック
-      if (
-        updates.familyId &&
-        ((user.role === 'parent' && !isCreatingFamilyId) ||
-          user.role === 'child')
-      ) {
-        const q = query(
-          collection(db, 'users'),
-          where('familyId', '==', updates.familyId)
-        )
-        const snapshot = await getDocs(q)
-        if (snapshot.empty) {
-          throw new Error('familyIdが存在しません')
-        }
-      }
+      // familyIdの更新時バリデーション
+      await validateFamilyIdForUpdate(user, id, updates, isCreatingFamilyId)
       const docRef = doc(db, 'users', id)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await updateDoc(docRef, updates as { [x: string]: any })
