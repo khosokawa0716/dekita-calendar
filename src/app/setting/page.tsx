@@ -189,7 +189,7 @@ export default function SettingsPage() {
                 onChange={(e) => setFamilyId(e.target.value)}
                 className="border px-2 py-1 w-full"
                 placeholder="新規生成または既存IDを入力"
-                readOnly={!!familyId && isValidFamilyId(familyId)} // 生成時はreadonly
+                readOnly={isCreatingFamilyId} // 生成時はreadonly
               />
             </>
           ) : (
