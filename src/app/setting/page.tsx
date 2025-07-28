@@ -25,22 +25,30 @@ export default function SettingsPage() {
 
   // 新規生成ボタン
   const handleGenerateFamilyId = () => {
-    const newId = crypto.randomUUID()
-    // crypto.randomUUID()が機能しなかった場合のフォールバック
-    // 最新のブラウザではcrypto.randomUUID()がサポートされているが、古いブラウザではサポートされていない可能性がある
-    if (!newId || !isValidFamilyId(newId)) {
+    try {
+      const newId = crypto.randomUUID()
+      // crypto.randomUUID()が機能しなかった場合のフォールバック
+      // 最新のブラウザではcrypto.randomUUID()がサポートされているが、古いブラウザではサポートされていない可能性がある
+      if (!isValidFamilyId(newId)) {
+        setToast({
+          message: 'ファミリーIDの生成に失敗しました',
+          type: 'error',
+        })
+        return
+      }
+      setFamilyId(newId)
+      setIsCreatingFamilyId(true)
       setToast({
-        message: 'ファミリーIDの生成に失敗しました',
+        message: '新しいファミリーIDを生成しました',
+        type: 'success',
+      })
+    } catch (error) {
+      console.error('ファミリーID生成エラー:', error)
+      setToast({
+        message: 'ファミリーIDの生成中にエラーが発生しました',
         type: 'error',
       })
-      return
     }
-    setFamilyId(newId)
-    setIsCreatingFamilyId(true)
-    setToast({
-      message: '新しいファミリーIDを生成しました',
-      type: 'success',
-    })
   }
 
   // UUID validation regex constant
