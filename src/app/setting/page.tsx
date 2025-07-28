@@ -43,11 +43,13 @@ export default function SettingsPage() {
     })
   }
 
+  // UUID validation regex constant
+  const UUID_REGEX =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
   // randomUUIDで生成された文字列が正しいかどうかをチェック
   const isValidFamilyId = (id: string) => {
-    const regex =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-    return regex.test(id)
+    return UUID_REGEX.test(id)
   }
 
   // 既存ID入力ボタン
