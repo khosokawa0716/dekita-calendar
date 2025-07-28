@@ -26,9 +26,9 @@ export default function SettingsPage() {
   // 新規生成ボタン
   const handleGenerateFamilyId = () => {
     try {
-      const newId = crypto.randomUUID()
-      // crypto.randomUUID()が機能しなかった場合のフォールバック
-      // 最新のブラウザではcrypto.randomUUID()がサポートされているが、古いブラウザではサポートされていない可能性がある
+      const newId = typeof crypto.randomUUID === 'function'
+        ? crypto.randomUUID()
+        : generateFallbackUUID() // Use fallback if crypto.randomUUID is unavailable
       if (!isValidFamilyId(newId)) {
         setToast({
           message: 'ファミリーIDの生成に失敗しました',
