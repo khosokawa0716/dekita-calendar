@@ -23,12 +23,20 @@ export default function SettingsPage() {
   const [displayName, setDisplayName] = useState(userInfo?.displayName ?? '')
   const [familyId, setFamilyId] = useState(userInfo?.familyId ?? '')
 
+  // Fallback for randomUUID if not available
+  const generateFallbackUUID = () => {
+    const timestamp = Date.now().toString(16)
+    const randomPart = Math.random().toString(16).slice(2, 10)
+    return `${timestamp}-${randomPart.slice(0, 4)}-${randomPart.slice(4, 8)}-${randomPart.slice(8, 12)}-${randomPart.slice(12, 16)}`
+  }
+
   // 新規生成ボタン
   const handleGenerateFamilyId = () => {
     try {
-      const newId = typeof crypto.randomUUID === 'function'
-        ? crypto.randomUUID()
-        : generateFallbackUUID() // Use fallback if crypto.randomUUID is unavailable
+      const newId =
+        typeof crypto.randomUUID === 'function'
+          ? crypto.randomUUID()
+          : generateFallbackUUID() // Use fallback if crypto.randomUUID is unavailable
       if (!isValidFamilyId(newId)) {
         setToast({
           message: 'ファミリーIDの生成に失敗しました',
