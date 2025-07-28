@@ -24,7 +24,7 @@ async function isFamilyIdUnique(
   // userIdが指定されていない場合は、familyIdが使われていなければtrue（重複なし）
   return userId
     ? snapshot.docs.every((doc) => doc.id === userId)
-    : snapshot.empty
+    : !snapshot.empty
 }
 
 /**
