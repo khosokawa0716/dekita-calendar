@@ -122,6 +122,17 @@ export default function SettingsPage() {
     }
   }
 
+  const handleCopyFamilyId = async () => {
+    if (!familyId) return
+    try {
+      await navigator.clipboard.writeText(familyId)
+      setToast({ message: 'ファミリーIDをコピーしました', type: 'success' })
+    } catch (error) {
+      console.error('ファミリーIDコピーエラー:', error)
+      setToast({ message: 'コピーに失敗しました', type: 'error' })
+    }
+  }
+
   return (
     <RoleGuard allowedRoles={['parent', 'child']}>
       <main className="p-4">
@@ -170,14 +181,7 @@ export default function SettingsPage() {
                 </button>
                 <button
                   className="bg-blue-500 text-white px-2 py-1 rounded"
-                  onClick={async () => {
-                    if (!familyId) return
-                    await navigator.clipboard.writeText(familyId)
-                    setToast({
-                      message: 'ファミリーIDをコピーしました',
-                      type: 'success',
-                    })
-                  }}
+                  onClick={handleCopyFamilyId}
                   disabled={!familyId}
                 >
                   コピー
