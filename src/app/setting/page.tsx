@@ -43,7 +43,7 @@ export default function SettingsPage() {
           : generateFallbackUUID() // Use fallback if crypto.randomUUID is unavailable
       if (!isValidFamilyId(newId)) {
         setToast({
-          message: 'ファミリーIDの生成に失敗しました',
+          message: 'ファミリーIDの生成に失敗しました (無効な形式)',
           type: 'error',
         })
         return
