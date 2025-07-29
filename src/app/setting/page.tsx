@@ -26,7 +26,11 @@ export default function SettingsPage() {
   // Fallback for randomUUID if not available
   const generateFallbackUUID = () => {
     const timestamp = Date.now().toString(16)
-    const randomPart = Math.random().toString(16).slice(2, 10)
+    let randomPart = ''
+    while (randomPart.length < 16) {
+      randomPart += Math.random().toString(16).slice(2)
+    }
+    randomPart = randomPart.slice(0, 16) // Ensure exactly 16 characters
     return `${timestamp}-${randomPart.slice(0, 4)}-${randomPart.slice(4, 8)}-${randomPart.slice(8, 12)}-${randomPart.slice(12, 16)}`
   }
 
