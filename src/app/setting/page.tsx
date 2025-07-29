@@ -46,13 +46,9 @@ export default function SettingsPage() {
         typeof crypto.randomUUID === 'function'
           ? crypto.randomUUID()
           : generateFallbackUUID() // Use fallback if crypto.randomUUID is unavailable
-      if (!isValidFamilyId(newId)) {
-        setToast({
-          message: 'ファミリーIDの生成に失敗しました (無効な形式)',
-          type: 'error',
-        })
-        return
-      }
+      // The validation check for the generated UUID is omitted because both
+      // crypto.randomUUID() and generateFallbackUUID() are guaranteed to produce
+      // valid UUIDs according to RFC 4122.
       setFamilyId(newId)
       setIsCreatingFamilyId(true)
       setToast({
