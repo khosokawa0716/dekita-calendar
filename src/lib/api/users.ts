@@ -20,8 +20,8 @@ async function isFamilyIdUnique(
 ): Promise<boolean> {
   const q = query(collection(db, 'users'), where('familyId', '==', familyId))
   const snapshot = await getDocs(q)
-  // userIdが指定されている場合は、自分自身以外でfamilyIdが使われていればfalse（重複あり）
-  // userIdが指定されていない場合は、familyIdが使われていなければtrue（重複なし）
+  // If userId is specified, return false if familyId is used by anyone other than the user (duplicate exists).
+  // If userId is not specified, return true if familyId is not used (no duplicate exists).
   return userId
     ? snapshot.docs.every((doc) => doc.id === userId)
     : snapshot.empty
