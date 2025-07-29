@@ -47,10 +47,10 @@ async function validateFamilyIdForUpdate(
   }
 
   // 子の場合または、親でisCreatingFamilyIdがfalseの時はfamilyIdの存在チェック
-  if (
-    updates.familyId &&
-    ((user.role === 'parent' && !isCreatingFamilyId) || user.role === 'child')
-  ) {
+  const shouldCheckFamilyIdExists =
+    (user.role === 'parent' && !isCreatingFamilyId) || user.role === 'child';
+
+  if (updates.familyId && shouldCheckFamilyIdExists) {
     const q = query(
       collection(db, 'users'),
       where('familyId', '==', updates.familyId)
