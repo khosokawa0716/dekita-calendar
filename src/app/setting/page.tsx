@@ -25,13 +25,18 @@ export default function SettingsPage() {
 
   // Fallback for randomUUID if not available
   const generateFallbackUUID = () => {
-    const timestamp = Date.now().toString(16)
-    let randomPart = ''
-    while (randomPart.length < 16) {
-      randomPart += Math.random().toString(16).slice(2)
-    }
-    randomPart = randomPart.slice(0, 16) // Ensure exactly 16 characters
-    return `${timestamp}-${randomPart.slice(0, 4)}-${randomPart.slice(4, 8)}-${randomPart.slice(8, 12)}-${randomPart.slice(12, 16)}`
+    const randomBytes = new Uint8Array(16)
+    crypto.getRandomValues(randomBytes)
+
+    // Set version to 4 (UUID v4)
+    randomBytes[6] = (randomBytes[6] & 0x0f) | 0x40
+
+    // Set variant to RFC4122 (variant 1)
+    randomBytes[8] = (randomBytes[8] & 0x3f) | 0x80
+
+    // Convert bytes to UUID string format
+    const hex = Array.from(randomBytes).map((byte) => byte.toString(16).padStart(2, '0')).join('')
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
   }
 
   // 新規生成ボタン
