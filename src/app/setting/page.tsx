@@ -87,12 +87,23 @@ export default function SettingsPage() {
     try {
       // 親の場合のみisCreatingFamilyIdを渡す
       if (userInfo.role === 'parent') {
-        await userAPI.update(userInfo.id, isCreatingFamilyId, {
-          displayName,
-          familyId,
-        })
+        await userAPI.update(
+          userInfo.id,
+          {
+            displayName,
+            familyId,
+          },
+          isCreatingFamilyId
+        )
       } else {
-        await userAPI.update(userInfo.id, false, { displayName, familyId })
+        await userAPI.update(
+          userInfo.id,
+          {
+            displayName,
+            familyId,
+          },
+          false
+        )
       }
       setToast({ message: '設定を保存しました', type: 'success' })
     } catch (error) {
