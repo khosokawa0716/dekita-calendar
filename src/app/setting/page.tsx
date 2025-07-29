@@ -85,26 +85,16 @@ export default function SettingsPage() {
   const handleSubmit = async () => {
     if (!userInfo) return
     try {
-      // 親の場合のみisCreatingFamilyIdを渡す
-      if (userInfo.role === 'parent') {
-        await userAPI.update(
-          userInfo.id,
-          {
-            displayName,
-            familyId,
-          },
-          isCreatingFamilyId
-        )
-      } else {
-        await userAPI.update(
-          userInfo.id,
-          {
-            displayName,
-            familyId,
-          },
-          false
-        )
-      }
+      // Determine whether to create a family ID
+      const shouldCreateFamilyId = userInfo.role === 'parent' && isCreatingFamilyId;
+      await userAPI.update(
+        userInfo.id,
+        {
+          displayName,
+          familyId,
+        },
+        shouldCreateFamilyId
+      );
       setToast({ message: '設定を保存しました', type: 'success' })
     } catch (error) {
       console.error('設定保存エラー:', error)
