@@ -48,9 +48,7 @@ export default function SettingsPage() {
         typeof crypto.randomUUID === 'function'
           ? crypto.randomUUID()
           : generateFallbackUUID() // Use fallback if crypto.randomUUID is unavailable
-      // The validation check for the generated UUID is omitted because both
-      // crypto.randomUUID() and generateFallbackUUID() are guaranteed to produce
-      // valid UUIDs according to RFC 4122.
+      // Generated UUIDs are guaranteed to be valid per RFC 4122.
       setFamilyId(newId)
       setIsCreatingFamilyId(true)
       setToast({
