@@ -125,8 +125,8 @@ export const userAPI = {
    */
   update: async (
     id: string,
-    isCreatingFamilyId: boolean,
-    updates: Partial<Omit<User, 'id'>>
+    updates: Partial<Omit<User, 'id'>>,
+    isCreatingFamilyId: boolean = false
   ): Promise<void> => {
     try {
       // ユーザー情報取得
