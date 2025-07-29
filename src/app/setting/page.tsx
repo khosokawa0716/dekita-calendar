@@ -23,7 +23,9 @@ export default function SettingsPage() {
   const [displayName, setDisplayName] = useState(userInfo?.displayName ?? '')
   const [familyId, setFamilyId] = useState(userInfo?.familyId ?? '')
 
-  // Fallback for randomUUID if not available
+  // Fallback for randomUUID if not available.
+  // The crypto.randomUUID API is supported in modern browsers and Node.js versions (v16.7.0+).
+  // Older browsers or Node.js versions may not support this API, so a fallback is implemented.
   const generateFallbackUUID = () => {
     const randomBytes = new Uint8Array(16)
     crypto.getRandomValues(randomBytes)
