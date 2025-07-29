@@ -35,7 +35,9 @@ export default function SettingsPage() {
     randomBytes[8] = (randomBytes[8] & 0x3f) | 0x80
 
     // Convert bytes to UUID string format
-    const hex = Array.from(randomBytes).map((byte) => byte.toString(16).padStart(2, '0')).join('')
+    const hex = Array.from(randomBytes)
+      .map((byte) => byte.toString(16).padStart(2, '0'))
+      .join('')
     return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
   }
 
@@ -64,15 +66,6 @@ export default function SettingsPage() {
     }
   }
 
-  // UUID validation regex constant
-  const UUID_REGEX =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-
-  // randomUUIDで生成された文字列が正しいかどうかをチェック
-  const isValidFamilyId = (id: string) => {
-    return UUID_REGEX.test(id)
-  }
-
   // 既存ID入力ボタン
   const handleExistingFamilyId = () => {
     setFamilyId('')
@@ -87,7 +80,8 @@ export default function SettingsPage() {
     if (!userInfo) return
     try {
       // Determine whether to create a family ID
-      const shouldCreateFamilyId = userInfo.role === 'parent' && isCreatingFamilyId;
+      const shouldCreateFamilyId =
+        userInfo.role === 'parent' && isCreatingFamilyId
       await userAPI.update(
         userInfo.id,
         {
@@ -95,7 +89,7 @@ export default function SettingsPage() {
           familyId,
         },
         shouldCreateFamilyId
-      );
+      )
       setToast({ message: '設定を保存しました', type: 'success' })
     } catch (error) {
       console.error('設定保存エラー:', error)
