@@ -193,7 +193,7 @@ export default function TaskListPage() {
           userInfo={userInfo}
         />
       ) : (
-        <></>
+        <p className="text-red-500">Unsupported user role. Please contact support.</p>
       )}
       {toastMessage && (
         <Toast
