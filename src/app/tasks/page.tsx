@@ -3,13 +3,14 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useAuthRedirect } from '@/hooks/useAuthRedirect'
 import { getTodayString } from '@/lib/dateUtils'
-import Link from 'next/link'
-import { RoleGuard } from '@/components/RoleGuard'
 import { Task } from '@/types/task'
 import { useFamilyChildren } from '@/hooks/useFamilyChildren'
 import { taskAPI, achievementAPI } from '@/lib/api'
 import { useUserInfo } from '@/hooks/useUserInfo'
 import { Timestamp } from 'firebase/firestore'
+import { ParentTaskList } from '@/components/pages/ParentTaskList'
+import { ChildTaskList } from '@/components/pages/ChildTaskList'
+import Toast from '@/components/Toast'
 
 export default function TaskListPage() {
   useAuthRedirect()
@@ -31,6 +32,110 @@ export default function TaskListPage() {
       console.error('タスク取得エラー:', error)
     }
   }, [userInfo])
+
+  const [loading, setLoading] = useState(false)
+  const [toastMessage, setToastMessage] = useState<string | null>(null)
+  const [toastType, setToastType] = useState<'success' | 'error'>('success')
+
+  // タスクの完了状態を更新
+  const updateTaskStatus = async (
+    taskId: string,
+    isCompleted: boolean,
+    comment: string
+  ) => {
+    if (!userInfo || userInfo.role !== 'child') {
+      setToastType('error')
+      setToastMessage('タスクの編集権限がありません')
+      return
+    }
+
+    setLoading(true)
+    try {
+      // 現在のタスクを取得
+      const currentTask = tasks.find((task) => task.id === taskId)
+      if (!currentTask) return
+
+      // 新構造での更新: childrenStatusを更新
+      const updatedChildrenStatus = {
+        ...currentTask.childrenStatus,
+        [userInfo.id]: {
+          isCompleted,
+          comment,
+          ...(isCompleted && {
+            completedAt: Timestamp.fromDate(new Date()),
+          }),
+        },
+      }
+
+      // ローカルstateを更新
+      setTasks((prev) =>
+        prev.map((task) => {
+          if (task.id === taskId) {
+            return {
+              ...task,
+              childrenStatus: updatedChildrenStatus,
+            }
+          }
+          return task
+        })
+      )
+
+      setToastType('success')
+      setToastMessage('タスクを保存しました')
+    } catch (error) {
+      console.error('保存エラー:', error)
+      setToastType('error')
+      setToastMessage('タスクの保存に失敗しました')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // 表示されている全てのタスクの完了状態とコメントを更新する関数
+  const updateAllTasks = async () => {
+    if (!userInfo || userInfo.role !== 'child') {
+      setToastType('error')
+      setToastMessage('タスクの一括更新権限がありません')
+      return
+    }
+    setLoading(true)
+    try {
+      const updatedTasks = tasks.map((task) => {
+        const currentStatus = task.childrenStatus?.[userInfo.id] || {
+          isCompleted: false,
+          comment: '',
+        }
+        return {
+          ...task,
+          childrenStatus: {
+            ...task.childrenStatus,
+            [userInfo.id]: {
+              isCompleted: currentStatus.isCompleted,
+              comment: currentStatus.comment,
+              ...(currentStatus.isCompleted && {
+                completedAt: Timestamp.fromDate(new Date()),
+              }),
+            },
+          },
+        }
+      })
+      await Promise.all(
+        updatedTasks.map((task) =>
+          taskAPI.update(task.id, { childrenStatus: task.childrenStatus })
+        )
+      )
+      // ローカルstateを更新
+      setTasks(updatedTasks)
+      setToastType('success')
+      setToastMessage('全てのタスクを更新しました')
+    } catch (error) {
+      console.error('一括更新エラー:', error)
+      setToastType('error')
+      setToastMessage('タスクの一括更新に失敗しました')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const toggleCompleted = async (task: Task, childId: string) => {
     try {
@@ -66,89 +171,37 @@ export default function TaskListPage() {
   useEffect(() => {
     fetchTasks()
   }, [userInfo, fetchTasks])
-
-  // 子どもの名前を取得するヘルパー関数
-  const getChildName = (childId: string) => {
-    const child = children.find((c) => c.id === childId)
-    return child ? child.displayName : 'Unknown'
-  }
-
-  // タスクの完了状況を取得
-  const getTaskCompletionStatus = (task: Task) => {
-    const completed = Object.values(task.childrenStatus).filter(
-      (status) => status.isCompleted
-    ).length
-    const total = Object.keys(task.childrenStatus).length
-    return { completed, total }
-  }
+  if (!userInfo) return null
 
   return (
-    <RoleGuard allowedRoles={['parent']}>
-      <main className="p-4">
-        <h1 className="text-2xl font-bold mb-4">今日のタスク一覧</h1>
-        {tasks.length === 0 ? (
-          <p className="text-gray-500">今日のタスクはありません。</p>
-        ) : (
-          <div className="space-y-4">
-            {tasks.map((task) => {
-              const { completed, total } = getTaskCompletionStatus(task)
-              return (
-                <div
-                  key={task.id}
-                  className="bg-white p-4 rounded-lg border shadow-sm"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h3 className="font-medium text-lg">{task.title}</h3>
-                      <p className="text-sm text-gray-600 mt-1">
-                        完了状況: {completed}/{total} 人
-                      </p>
-
-                      {/* 子どもごとの詳細状況 */}
-                      {task.childrenStatus &&
-                        Object.keys(task.childrenStatus).length > 0 && (
-                          <div className="mt-3 space-y-2">
-                            {Object.entries(task.childrenStatus).map(
-                              ([childId, status]) => (
-                                <div
-                                  key={childId}
-                                  className="flex items-center space-x-2 text-sm cursor-pointer"
-                                  onClick={() => toggleCompleted(task, childId)}
-                                >
-                                  <span
-                                    className={`w-4 h-4 rounded-full ${status.isCompleted ? 'bg-green-500' : 'bg-gray-300'}`}
-                                  ></span>
-                                  <span>{getChildName(childId)}</span>
-                                  {status.isCompleted && (
-                                    <span className="text-green-600">
-                                      ✓ 完了
-                                    </span>
-                                  )}
-                                  {status.comment && (
-                                    <span className="text-gray-500">
-                                      - {status.comment}
-                                    </span>
-                                  )}
-                                </div>
-                              )
-                            )}
-                          </div>
-                        )}
-                    </div>
-
-                    <Link
-                      href={`/tasks/edit/${task.id}`}
-                      className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
-                    >
-                      編集する
-                    </Link>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        )}
-      </main>
-    </RoleGuard>
+    <main className="p-4">
+      <h1 className="text-2xl font-bold mb-4">今日のタスク一覧</h1>
+      {tasks.length === 0 ? (
+        <p className="text-gray-500">今日のタスクはありません。</p>
+      ) : userInfo.role === 'parent' ? (
+        <ParentTaskList
+          tasks={tasks}
+          childrenData={children}
+          toggleCompleted={toggleCompleted}
+        />
+      ) : userInfo.role === 'child' ? (
+        <ChildTaskList
+          todayTasks={tasks}
+          updateTaskStatus={updateTaskStatus}
+          updateAllTasks={updateAllTasks}
+          loading={loading}
+          userInfo={userInfo}
+        />
+      ) : (
+        <p className="text-red-500">Unsupported user role. Please contact support.</p>
+      )}
+      {toastMessage && (
+        <Toast
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setToastMessage(null)}
+        />
+      )}
+    </main>
   )
 }

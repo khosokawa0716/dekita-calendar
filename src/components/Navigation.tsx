@@ -24,13 +24,13 @@ export function Navigation() {
           {userInfo.role === 'parent' && (
             <>
               <Link href="/">トップ</Link>
-              <Link href="/tasks">タスク一覧</Link>
               <Link href="/tasks/add">タスク作成</Link>
               <Link href="/task-templates">テンプレート</Link>
             </>
           )}
 
           {/* 親子共通で表示 */}
+          <Link href="/tasks">タスク一覧</Link>
           <Link href="/tasks/calendar">カレンダー</Link>
           <Link href="/setting">設定</Link>
         </>
