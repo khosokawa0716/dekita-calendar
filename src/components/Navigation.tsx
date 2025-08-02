@@ -4,11 +4,6 @@ import Link from 'next/link'
 import { useUserInfo } from '@/hooks/useUserInfo'
 import { useState } from 'react'
 
-// CSSクラスの定義
-// 変数を使ってクラス名を定義することで、可読性を向上させる
-// 変数名はクラス名の意味を反映するように命名
-// 例: NAV_BASE_CLASS はナビゲーションの基本クラスを表す
-// 例: MENU_CONTAINER_BASE_CLASS はメニューコンテナの基本クラスを表す
 const NAV_BASE_CLASS = 'p-4 bg-gray-100 flex items-center justify-between h-[var(--header-height)]'
 const MENU_CONTAINER_BASE_CLASS = `
   flex-col gap-4 text-xs
