@@ -31,7 +31,8 @@ export function RoleGuard({
       <>
         {unauthorizedComponent || (
           <div>
-            このページは{allowedRoles.includes('parent') ? '保護者' : '子ども'}
+            このページは
+            {allowedRoles.includes('parent') ? '保護者' : '子ども'}
             のみアクセス可能です
           </div>
         )}

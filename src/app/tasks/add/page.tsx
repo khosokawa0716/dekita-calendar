@@ -48,7 +48,9 @@ export default function TaskAddPage() {
 
       // 選択された子どもたちの初期状態を設定
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const initialChildrenStatus: { [childId: string]: any } = {}
+      const initialChildrenStatus: {
+        [childId: string]: any
+      } = {}
       selectedChildren.forEach((childId) => {
         initialChildrenStatus[childId] = {
           isCompleted: false,

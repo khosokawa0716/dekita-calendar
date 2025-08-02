@@ -14,7 +14,9 @@ export interface Task {
   date: string
   createdBy: string
   familyId: string
-  childrenStatus: { [childId: string]: ChildStatus }
+  childrenStatus: {
+    [childId: string]: ChildStatus
+  }
 }
 
 // タスクの集計結果
@@ -53,12 +55,16 @@ export interface CreateTaskInput {
   date: string
   createdBy: string
   familyId: string
-  childrenStatus: { [childId: string]: ChildStatus }
+  childrenStatus: {
+    [childId: string]: ChildStatus
+  }
 }
 
 export interface UpdateTaskInput {
   title?: string
-  childrenStatus?: { [childId: string]: ChildStatus }
+  childrenStatus?: {
+    [childId: string]: ChildStatus
+  }
 }
 
 export interface User {

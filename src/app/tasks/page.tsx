@@ -121,7 +121,9 @@ export default function TaskListPage() {
       })
       await Promise.all(
         updatedTasks.map((task) =>
-          taskAPI.update(task.id, { childrenStatus: task.childrenStatus })
+          taskAPI.update(task.id, {
+            childrenStatus: task.childrenStatus,
+          })
         )
       )
       // ローカルstateを更新
@@ -153,7 +155,9 @@ export default function TaskListPage() {
         },
       }
 
-      await taskAPI.update(task.id, { childrenStatus: updatedChildrenStatus })
+      await taskAPI.update(task.id, {
+        childrenStatus: updatedChildrenStatus,
+      })
 
       const today = getTodayString()
       if (newCompleted) {
@@ -193,7 +197,9 @@ export default function TaskListPage() {
           userInfo={userInfo}
         />
       ) : (
-        <p className="text-red-500">Unsupported user role. Please contact support.</p>
+        <p className="text-red-500">
+          Unsupported user role. Please contact support.
+        </p>
       )}
       {toastMessage && (
         <Toast

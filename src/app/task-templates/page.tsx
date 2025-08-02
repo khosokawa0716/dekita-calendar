@@ -132,7 +132,9 @@ export default function TaskTemplateListPage() {
 
         // 全ての子どもに対してタスクを生成
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const initialChildrenStatus: { [childId: string]: any } = {}
+        const initialChildrenStatus: {
+          [childId: string]: any
+        } = {}
         children.forEach((child) => {
           initialChildrenStatus[child.id] = {
             isCompleted: false,
@@ -161,7 +163,10 @@ export default function TaskTemplateListPage() {
       })
     } catch (error) {
       console.error('タスク生成エラー:', error)
-      setToast({ message: '生成に失敗しました', type: 'error' })
+      setToast({
+        message: '生成に失敗しました',
+        type: 'error',
+      })
     }
   }
 
@@ -197,7 +202,9 @@ export default function TaskTemplateListPage() {
     try {
       // 選択された子どもたちの初期状態を設定
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const initialChildrenStatus: { [childId: string]: any } = {}
+      const initialChildrenStatus: {
+        [childId: string]: any
+      } = {}
       selectedChildren.forEach((childId) => {
         initialChildrenStatus[childId] = {
           isCompleted: false,
@@ -223,7 +230,10 @@ export default function TaskTemplateListPage() {
       setSelectedChildren([])
     } catch (error) {
       console.error('タスク追加エラー:', error)
-      setToast({ message: '追加に失敗しました', type: 'error' })
+      setToast({
+        message: '追加に失敗しました',
+        type: 'error',
+      })
     }
   }
 
@@ -233,12 +243,18 @@ export default function TaskTemplateListPage() {
 
     try {
       await taskTemplateAPI.delete(id)
-      setToast({ message: 'テンプレートを削除しました', type: 'success' })
+      setToast({
+        message: 'テンプレートを削除しました',
+        type: 'success',
+      })
       // 一覧の再取得 or ローカルstateから削除
       setTemplates((prev) => prev.filter((t) => t.id !== id))
     } catch (error) {
       console.error('テンプレート削除エラー:', error)
-      setToast({ message: '削除に失敗しました', type: 'error' })
+      setToast({
+        message: '削除に失敗しました',
+        type: 'error',
+      })
     }
   }
 
@@ -314,7 +330,8 @@ export default function TaskTemplateListPage() {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
               <h3 className="text-lg font-bold mb-4">
-                「{selectedTemplate.title}」を割り当てる子どもを選択
+                「{selectedTemplate.title}
+                」を割り当てる子どもを選択
               </h3>
 
               {childrenLoading ? (

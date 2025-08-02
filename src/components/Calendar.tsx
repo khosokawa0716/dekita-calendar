@@ -9,7 +9,10 @@ import Image from 'next/image'
  */
 type Props = {
   taskData?: {
-    [dateStr: string]: { total: number; completed: number }
+    [dateStr: string]: {
+      total: number
+      completed: number
+    }
   }
 }
 
@@ -184,7 +187,9 @@ export default function Calendar({ taskData = {} }: Props) {
 
   // 取得した日付を週ごとに分割（7日ずつのグループに分ける）
   const weeks = Array.from(
-    { length: Math.ceil(calendarDays.length / 7) }, // 必要な週数を計算
+    {
+      length: Math.ceil(calendarDays.length / 7),
+    }, // 必要な週数を計算
     (_, weekIndex) => calendarDays.slice(weekIndex * 7, (weekIndex + 1) * 7) // 各週の日付を切り出し
   )
 

@@ -296,8 +296,14 @@ await taskAPI.create({
   createdBy: 'parent_uid',
   familyId: 'family_123',
   childrenStatus: {
-    child1_uid: { isCompleted: false, comment: '' },
-    child2_uid: { isCompleted: false, comment: '' },
+    child1_uid: {
+      isCompleted: false,
+      comment: '',
+    },
+    child2_uid: {
+      isCompleted: false,
+      comment: '',
+    },
   },
 })
 ```

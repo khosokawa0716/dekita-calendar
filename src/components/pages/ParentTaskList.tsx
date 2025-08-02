@@ -3,7 +3,10 @@ import { Task } from '@/types/task'
 
 type Props = {
   tasks: Task[]
-  childrenData: { id: string; displayName: string }[]
+  childrenData: {
+    id: string
+    displayName: string
+  }[]
   toggleCompleted: (task: Task, childId: string) => void
 }
 

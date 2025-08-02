@@ -91,10 +91,16 @@ export default function SettingsPage() {
         },
         shouldCreateFamilyId
       )
-      setToast({ message: '設定を保存しました', type: 'success' })
+      setToast({
+        message: '設定を保存しました',
+        type: 'success',
+      })
     } catch (error) {
       console.error('設定保存エラー:', error)
-      setToast({ message: '保存に失敗しました', type: 'error' })
+      setToast({
+        message: '保存に失敗しました',
+        type: 'error',
+      })
     }
   }
 
@@ -133,11 +139,17 @@ export default function SettingsPage() {
       // Firebase Authから削除
       await deleteUser(auth.currentUser)
 
-      setToast({ message: 'アカウントを削除しました', type: 'success' })
+      setToast({
+        message: 'アカウントを削除しました',
+        type: 'success',
+      })
       location.href = '/login'
     } catch (error) {
       console.error('アカウント削除エラー:', error)
-      setToast({ message: '削除に失敗しました', type: 'error' })
+      setToast({
+        message: '削除に失敗しました',
+        type: 'error',
+      })
     }
   }
 
@@ -145,10 +157,16 @@ export default function SettingsPage() {
     if (!familyId) return
     try {
       await navigator.clipboard.writeText(familyId)
-      setToast({ message: 'ファミリーIDをコピーしました', type: 'success' })
+      setToast({
+        message: 'ファミリーIDをコピーしました',
+        type: 'success',
+      })
     } catch (error) {
       console.error('ファミリーIDコピーエラー:', error)
-      setToast({ message: 'コピーに失敗しました', type: 'error' })
+      setToast({
+        message: 'コピーに失敗しました',
+        type: 'error',
+      })
     }
   }
 
