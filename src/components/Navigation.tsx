@@ -4,6 +4,34 @@ import Link from 'next/link'
 import { useUserInfo } from '@/hooks/useUserInfo'
 import { useState } from 'react'
 
+// CSSクラスの定義
+// 変数を使ってクラス名を定義することで、可読性を向上させる
+// 変数名はクラス名の意味を反映するように命名
+// 例: NAV_BASE_CLASS はナビゲーションの基本クラスを表す
+// 例: MENU_CONTAINER_BASE_CLASS はメニューコンテナの基本クラスを表す
+const NAV_BASE_CLASS = 'p-4 bg-gray-100 flex items-center justify-between h-[var(--header-height)]'
+const MENU_CONTAINER_BASE_CLASS = `
+  flex-col gap-4 text-xs
+  absolute left-0 w-full bg-gray-100 p-4 z-10
+  [top:var(--header-height)]
+  md:static md:flex md:flex-row md:items-center md:gap-4 md:p-0 md:bg-gray-100
+`
+function getMenuContainerClass(menuOpen: boolean) {
+  return MENU_CONTAINER_BASE_CLASS + ` ${menuOpen ? 'flex' : 'hidden'} md:flex`
+}
+const HAMBURGER_BUTTON_CLASS = 'md:hidden flex flex-col gap-1'
+const HAMBURGER_ICON_CLASS = (menuOpen: boolean) => `
+  block w-6 h-0.5 bg-gray-800 transition-transform ${menuOpen ? 'rotate-45 translate-y-1.5' : ''}
+`
+const HAMBURGER_ICON_MIDDLE_CLASS = (menuOpen: boolean) => `
+  block w-6 h-0.5 bg-gray-800 transition-opacity ${menuOpen ? 'opacity-0' : 'opacity-100'}
+`
+const HAMBURGER_ICON_BOTTOM_CLASS = (menuOpen: boolean) => `
+  block w-6 h-0.5 bg-gray-800 transition-transform ${menuOpen ? '-rotate-45 -translate-y-1.5' : ''}
+`
+const USER_INFO_CLASS =
+  'text-sm text-blue-700 font-semibold border-t border-gray-300 pt-3 mt-2 md:mt-0 md:ml-6 md:border-t-0 md:border-l md:pl-6 md:pt-0'
+
 export function Navigation() {
   const { userInfo, loading } = useUserInfo()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -23,35 +51,21 @@ export function Navigation() {
   }
 
   return (
-    <nav className="p-4 bg-gray-100 flex items-center justify-between h-[var(--header-height)]">
+    <nav className={NAV_BASE_CLASS}>
       {/* ハンバーガーボタン（モバイルのみ表示） */}
       <button
-        className="md:hidden flex flex-col gap-1"
+        className={HAMBURGER_BUTTON_CLASS}
+        type="button"
         aria-label="メニューを開く"
         onClick={() => setMenuOpen(!menuOpen)}
       >
-        <span
-          className={`block w-6 h-0.5 bg-gray-800 transition-transform ${menuOpen ? 'rotate-45 translate-y-1.5' : ''}`}
-        ></span>
-        <span
-          className={`block w-6 h-0.5 bg-gray-800 transition-opacity ${menuOpen ? 'opacity-0' : 'opacity-100'}`}
-        ></span>
-        <span
-          className={`block w-6 h-0.5 bg-gray-800 transition-transform ${menuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}
-        ></span>
+        <span className={HAMBURGER_ICON_CLASS(menuOpen)}></span>
+        <span className={HAMBURGER_ICON_MIDDLE_CLASS(menuOpen)}></span>
+        <span className={HAMBURGER_ICON_BOTTOM_CLASS(menuOpen)}></span>
       </button>
 
       {/* メニュー本体 */}
-      <div
-        className={`
-          flex-col gap-4 text-xs
-          absolute left-0 w-full bg-gray-100 p-4 z-10
-          [top:var(--header-height)]
-          md:static md:flex md:flex-row md:items-center md:gap-4 md:p-0 md:bg-gray-100
-          ${menuOpen ? 'flex' : 'hidden'}
-          md:flex
-        `}
-      >
+      <div className={getMenuContainerClass(menuOpen)}>
         {/* ログイン済みの場合のみ表示 */}
         {userInfo && (
           <>
@@ -95,9 +109,9 @@ export function Navigation() {
           </>
         )}
 
-        {/* ユーザーの情報 */}
+        {/* ユーザーの情報 ログイン中 */}
         {userInfo && (
-          <div className="text-sm text-blue-700 font-semibold border-t border-gray-300 pt-3 mt-2 md:mt-0 md:ml-6 md:border-t-0 md:border-l md:pl-6 md:pt-0">
+          <div className={USER_INFO_CLASS}>
             {userInfo.displayName} ({userInfo.role})
           </div>
         )}
