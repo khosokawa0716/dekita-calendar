@@ -8,6 +8,11 @@ export function Navigation() {
   const { userInfo, loading } = useUserInfo()
   const [menuOpen, setMenuOpen] = useState(false)
 
+  // handler for Link click to close the menu
+  const handleLinkClick = () => {
+    setMenuOpen(false)
+  }
+
   // ローディング中は何も表示しない
   if (loading) {
     return (
@@ -45,7 +50,6 @@ export function Navigation() {
           ${menuOpen ? 'flex' : 'hidden'}
           md:flex
         `}
-        onClick={() => setMenuOpen(false)} // メニュークリックで閉じる
       >
         {/* ログイン済みの場合のみ表示 */}
         {userInfo && (
@@ -53,24 +57,40 @@ export function Navigation() {
             {/* 保護者のみ表示 */}
             {userInfo.role === 'parent' && (
               <>
-                <Link href="/">トップ</Link>
-                <Link href="/tasks/add">タスク作成</Link>
-                <Link href="/task-templates">テンプレート</Link>
+                <Link href="/" onClick={handleLinkClick}>
+                  トップ
+                </Link>
+                <Link href="/tasks/add" onClick={handleLinkClick}>
+                  タスク作成
+                </Link>
+                <Link href="/task-templates" onClick={handleLinkClick}>
+                  テンプレート
+                </Link>
               </>
             )}
 
             {/* 親子共通で表示 */}
-            <Link href="/tasks">タスク一覧</Link>
-            <Link href="/tasks/calendar">カレンダー</Link>
-            <Link href="/setting">設定</Link>
+            <Link href="/tasks" onClick={handleLinkClick}>
+              タスク一覧
+            </Link>
+            <Link href="/tasks/calendar" onClick={handleLinkClick}>
+              カレンダー
+            </Link>
+            <Link href="/setting" onClick={handleLinkClick}>
+              設定
+            </Link>
           </>
         )}
 
         {/* 未ログインの場合のみ表示 */}
         {!userInfo && (
           <>
-            <Link href="/login">ログイン</Link>
-            <Link href="/signup">新規登録</Link>
+            <Link href="/login" onClick={handleLinkClick}>
+              ログイン
+            </Link>
+            <Link href="/signup" onClick={handleLinkClick}>
+              新規登録
+            </Link>
           </>
         )}
 
