@@ -23,7 +23,7 @@ export function Navigation() {
   }
 
   return (
-    <nav className="p-4 bg-gray-100 flex items-center justify-between">
+    <nav className="p-4 bg-gray-100 flex items-center justify-between h-[var(--header-height)]">
       {/* ハンバーガーボタン（モバイルのみ表示） */}
       <button
         className="md:hidden flex flex-col gap-1"
@@ -45,7 +45,8 @@ export function Navigation() {
       <div
         className={`
           flex-col gap-4 text-xs
-          absolute top-12 left-0 w-full bg-gray-100 p-4 z-10
+          absolute left-0 w-full bg-gray-100 p-4 z-10
+          [top:var(--header-height)]
           md:static md:flex md:flex-row md:items-center md:gap-4 md:p-0 md:bg-gray-100
           ${menuOpen ? 'flex' : 'hidden'}
           md:flex
