@@ -47,7 +47,9 @@ interface CreateTaskInput {
   date: string
   createdBy: string
   familyId: string
-  childrenStatus: { [childId: string]: ChildStatus }
+  childrenStatus: {
+    [childId: string]: ChildStatus
+  }
 }
 ```
 
@@ -62,7 +64,11 @@ const taskData = {
   createdBy: 'parent_user_id',
   familyId: 'family_123',
   childrenStatus: {
-    child_1: { isCompleted: false, comment: '', completedAt: null },
+    child_1: {
+      isCompleted: false,
+      comment: '',
+      completedAt: null,
+    },
   },
 }
 
@@ -284,7 +290,9 @@ interface Task {
   date: string
   createdBy: string
   familyId: string
-  childrenStatus: { [childId: string]: ChildStatus }
+  childrenStatus: {
+    [childId: string]: ChildStatus
+  }
 }
 ```
 

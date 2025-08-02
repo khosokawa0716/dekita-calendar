@@ -7,7 +7,10 @@ import { RoleGuard } from '@/components/RoleGuard'
 import { taskAPI } from '@/lib/api'
 
 type TaskData = {
-  [dateStr: string]: { total: number; completed: number }
+  [dateStr: string]: {
+    total: number
+    completed: number
+  }
 }
 
 export default function CalendarPage() {
