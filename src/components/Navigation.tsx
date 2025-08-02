@@ -104,7 +104,7 @@ export function Navigation() {
           </>
         )}
 
-        {/* ユーザーの情報 ログイン中 */}
+        {/* ログイン中のユーザー情報 */}
         {userInfo && (
           <div className={USER_INFO_CLASS}>
             {userInfo.displayName} ({userInfo.role})
